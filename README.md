@@ -48,7 +48,7 @@ This suggests that more complex masking strategies do not always directly lead t
 The website will be available here once deployed:
 
 ```text
-https://YOUR_USERNAME.github.io/nano4m-masking-strategies/
+https://zyad77.github.io/nano4m-masking-strategies/
 ```
 
 ## Author
