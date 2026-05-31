@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slides — nano4M Structured Masking</title>
+  <link rel="stylesheet" href="style.css?v=20260531-1">
+  <style>
+    .timeline {
+      position: relative;
+      padding: 8px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .tl-item {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-num {
+      width: 58px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .tl-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      flex-shrink: 0;
+    }
+    .tl-item:hover .tl-circle {
+      border-color: var(--text);
+      color: var(--text);
+      background: var(--bg-alt);
+    }
+    .tl-card {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+      margin-bottom: 0;
+    }
+    .tl-item:hover .tl-card {
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-dark);
+      transform: translateX(3px);
+    }
+    .tl-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+    .tl-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .tl-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .tl-connector {
+      width: 2px;
+      height: 8px;
+      background: var(--border);
+      margin: 0 auto;
+    }
+
+    /* category accent colors */
+    .tl-item[data-cat="setup"] .tl-circle { border-color: #2563eb44; }
+    .tl-item[data-cat="setup"]:hover .tl-circle { border-color: #2563eb; color: #2563eb; background: #dbeafe; }
+    .tl-item[data-cat="method"] .tl-circle { border-color: #16a34a44; }
+    .tl-item[data-cat="method"]:hover .tl-circle { border-color: #16a34a; color: #16a34a; background: #dcfce7; }
+    .tl-item[data-cat="eval"] .tl-circle { border-color: #ea580c44; }
+    .tl-item[data-cat="eval"]:hover .tl-circle { border-color: #ea580c; color: #ea580c; background: #ffedd5; }
+    .tl-item[data-cat="results"] .tl-circle { border-color: #7c3aed44; }
+    .tl-item[data-cat="results"]:hover .tl-circle { border-color: #7c3aed; color: #7c3aed; background: #ede9fe; }
+    .tl-item[data-cat="discussion"] .tl-circle { border-color: #6b728044; }
+    .tl-item[data-cat="discussion"]:hover .tl-circle { border-color: #6b7280; color: #6b7280; background: #f1f5f9; }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 1px 7px;
+      border-radius: 100px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="nano4m.html">nano4M</a></li>
+      <li><a href="report.html">Report</a></li>
+      <li><a href="code.html">Code</a></li>
+      <li><a href="slides.html" class="active">Slides</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">COM-304 &middot; Project Presentation</div>
+    <h1>Presentation Slides</h1>
+    <p>14-slide presentation covering motivation, methods, evaluation, results, and discussion of structured masking strategies for nano4M.</p>
+  </div>
+</div>
+
+<!-- Download -->
+<section>
+  <div class="container">
+    <div class="download-card">
+      <div class="download-icon image-logo">
+        <img src="image/logo-galerie.jpg" alt="Slides logo">
+      </div>
+      <h2>Structured Masking Strategies for nano4M</h2>
+      <p>Full slide deck presented for COM-304 Foundation Models at EPFL. Covers masking strategies, training setup, evaluation pipelines, and key results.</p>
+      <a href="Presentation.pdf" target="_blank" class="btn-download">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Open Slides
+      </a>
+      <span class="download-note">PDF file &mdash; COM-304 Project Presentation &middot; 14 slides</span>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Slide outline</div>
+      <h2>Presentation Structure</h2>
+      <p>10 slides covering the full story — from motivation to conclusion.</p>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">
+        <span class="cat-badge" style="background:#dbeafe;color:#1d4ed8">setup</span> Setup
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">
+        <span class="cat-badge" style="background:#dcfce7;color:#15803d">method</span> Method
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">
+        <span class="cat-badge" style="background:#ffedd5;color:#c2410c">eval</span> Evaluation
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">
+        <span class="cat-badge" style="background:#ede9fe;color:#7c3aed">results</span> Results
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)">
+        <span class="cat-badge" style="background:#f1f5f9;color:#6b7280">discussion</span> Discussion
+      </span>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-item" data-cat="setup">
+        <div class="tl-num">
+          <div class="tl-circle">01</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#dbeafe;color:#1d4ed8">setup</span>Project extension</div>
+          <div class="tl-title">Project Extension &amp; Motivation</div>
+          <div class="tl-desc">From random to structured masking — why the baseline policy ignores modality structure and what we propose instead.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="setup">
+        <div class="tl-num">
+          <div class="tl-circle">02</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#dbeafe;color:#1d4ed8">setup</span>Experimental setup</div>
+          <div class="tl-title">Training Setups &amp; Masking Strategies</div>
+          <div class="tl-desc">Shared architecture, dataset, and hyperparameters. Presentation of the five variants: Baseline, V1, V2, V3, V4.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="method">
+        <div class="tl-num">
+          <div class="tl-circle">03</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#dcfce7;color:#15803d">method</span>Implementation</div>
+          <div class="tl-title">Masking Strategy Deep Dive</div>
+          <div class="tl-desc">Random, span, block, and mixed primitives illustrated on real 16×16 token grids. Grey = visible, red = masked targets.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="eval">
+        <div class="tl-num">
+          <div class="tl-circle">04</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ffedd5;color:#c2410c">eval</span>Rationale</div>
+          <div class="tl-title">Evaluation Methods &amp; Rationale</div>
+          <div class="tl-desc">Why training loss alone is insufficient to compare masking strategies — need for generation-based evaluation.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="eval">
+        <div class="tl-num">
+          <div class="tl-circle">05</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ffedd5;color:#c2410c">eval</span>Pipeline</div>
+          <div class="tl-title">Image-to-Text Evaluation Pipeline</div>
+          <div class="tl-desc"><code style="font-family:var(--font-mono);font-size:12px">generate_scene_desc_predictions.py</code> and scoring scripts for BLEU-4, CIDEr, ROUGE-L, Exact Match.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="results">
+        <div class="tl-num">
+          <div class="tl-circle">06</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ede9fe;color:#7c3aed">results</span>Training</div>
+          <div class="tl-title">Training Loss Comparison</div>
+          <div class="tl-desc">Full convergence curves with zoom on the final phase. Baseline &amp; V1 reach lowest loss. V2/V3 plateau higher — harder objective, not worse model.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="results">
+        <div class="tl-num">
+          <div class="tl-circle">07</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ede9fe;color:#7c3aed">results</span>Image → text</div>
+          <div class="tl-title">Image-to-Text Results</div>
+          <div class="tl-desc">BLEU-4, CIDEr, ROUGE-L, Exact Match on 200 val samples. <strong>V4 wins</strong> — best BLEU-4 (69.64) and CIDEr (37.55).</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="eval">
+        <div class="tl-num">
+          <div class="tl-circle">08</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ffedd5;color:#c2410c">eval</span>Verifier</div>
+          <div class="tl-title">CLEVR Scene Verifier</div>
+          <div class="tl-desc">End-to-end text-to-image evaluation: Grounding DINO object detection + CLIP alignment score + fidelity formula.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="results">
+        <div class="tl-num">
+          <div class="tl-circle">09</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#ede9fe;color:#7c3aed">results</span>Text → image</div>
+          <div class="tl-title">Text-to-Image Results</div>
+          <div class="tl-desc">CLEVR fidelity &amp; CLIP on 200 val samples. <strong>V1 wins</strong> — CLEVR 0.4735 (+0.0509 over baseline). All variants beat baseline on fidelity.</div>
+        </div>
+      </div>
+
+      <div class="tl-item" data-cat="discussion">
+        <div class="tl-num">
+          <div class="tl-circle">10</div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-tag"><span class="cat-badge" style="background:#f1f5f9;color:#6b7280">discussion</span>Conclusion</div>
+          <div class="tl-title">Interpretation &amp; Discussion</div>
+          <div class="tl-desc">No universal best strategy. Structure helps when aligned with the generation direction. Randomness remains useful for diversity.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="highlight-box" style="margin-top:32px;">
+      <strong>Key takeaway:</strong> Structure is useful, but the best results come from balancing modality-aware masking with enough randomness to keep the task diverse. The optimal policy is direction-dependent — not universal.
+    </div>
+  </div>
+</section>
+
+<!-- Key slides -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Slide highlights</div>
+      <h2>Key Slides at a Glance</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+      <div style="padding:20px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg);">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--v2);margin-bottom:6px;">SLIDE 03</div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Masking Strategies</h3>
+        <p style="font-size:13px;color:var(--text-muted);">Visual comparison of random, span, block, and mixed masking on real token grids — grey for visible, red/orange for masked targets.</p>
+      </div>
+      <div style="padding:20px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg);">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--v3);margin-bottom:6px;">SLIDE 06</div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Training Loss Curves</h3>
+        <p style="font-size:13px;color:var(--text-muted);">Full training curves with zoom on the final phase. Baseline and V1 reach lowest loss; V2/V3 plateau higher — harder objectives, not worse models.</p>
+      </div>
+      <div style="padding:20px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--bg);">
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--v1);margin-bottom:6px;">SLIDE 09</div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Text-to-Image Results</h3>
+        <p style="font-size:13px;color:var(--text-muted);">V1 wins both CLEVR fidelity (0.4735) and CLIP (0.6301) — +0.0509 CLEVR over baseline. All four variants beat the baseline on CLEVR fidelity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+</body>
+</html>

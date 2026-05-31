@@ -1,56 +1,121 @@
-# nano4M Masking Strategies
+# nano4M Structured Masking — Project Website
 
-A visual project page exploring how different masking strategies affect the training and evaluation of a multimodal AI model.
+**COM-304 Foundation Models · EPFL · 2025**
 
-## Overview
+> Structured Masking Strategies for nano4M on MultiCLEVR  
+> Comparing random, span, block, and mixed masking for multimodal pretraining
 
-This project presents my work on **nano4M**, a multimodal model trained on several data modalities, including RGB tokens, depth tokens, normal map tokens, and scene descriptions.
+---
 
-The objective is to compare multiple masking strategies and analyze how they influence the model’s evaluation loss.
+## Team
 
-## Masking strategies compared
+| Name | SCIPER |
+|---|---|
+| Ayman Belbachir | 356695 |
+| Zyad Tajeddine | 362730 |
+| Ali Tahri Hassani | 375756 |
+| Nour Alaoui Ismaili | 373068 |
 
-* **Baseline** — Random masking
-* **V1** — Span masking only
-* **V2** — Block masking only
-* **V3** — Span + Block masking
-* **V4** — Span + Block + Random masking
+---
 
-## Website content
+## How to Open the Website Locally
 
-The website includes:
+### Option 1 — Just open the file (simplest)
 
-* A clear presentation of the project
-* The different model variants
-* Evaluation loss comparisons
-* Training and evaluation insights
-* Links to the final report and slides
-* Code structure and GitHub links
-* Future improvements
+1. Double-click `index.html` in your file explorer, or drag it into a browser window.
+2. The site works without a server for most features.
 
-## Key result
+> **Note:** `data.json` is loaded via `fetch()`, which may be blocked by browsers when opening files directly from disk (CORS restriction). Use Option 2 to be safe.
 
-The final evaluation loss comparison shows that the random masking baseline achieved the lowest final evaluation loss in this setup, while V4 performed better than V2 and V3 but did not outperform the baseline.
+### Option 2 — Local server (recommended)
 
-This suggests that more complex masking strategies do not always directly lead to lower validation loss, especially when each model is evaluated under its own masking objective.
+**With Python (no install needed):**
 
-## Technologies
+```bash
+# Navigate to the website folder
+cd nano4m-website/
 
-* Python
-* PyTorch
-* nano4M / FourM
-* W&B logs
-* HTML / CSS / JavaScript
-* GitHub Pages
+# Python 3
+python -m http.server 8080
 
-## Live page
-
-The website will be available here once deployed:
-
-```text
-https://zyad77.github.io/nano4m-masking-strategies/
+# Then open: http://localhost:8080
 ```
 
-## Author
+**With Node.js:**
 
-Created by Zyad Tajeddine.
+```bash
+npx serve .
+# Then open the URL shown in the terminal
+```
+
+**With VS Code:**  
+Install the "Live Server" extension → right-click `index.html` → "Open with Live Server".
+
+---
+
+## File Structure
+
+```
+nano4m-website/
+├── index.html          # Home page
+├── report.html         # Report download page
+├── code.html           # GitHub profiles & implementation
+├── slides.html         # Slides download page
+├── graphs.html         # Graphs & visual results
+├── style.css           # All styles
+├── script.js           # Dynamic rendering from data.json
+├── data.json           # Project data (team, models, metrics)
+├── README.md           # This file
+│
+├── final_report_IA.pdf # ← Place here (same folder as HTML)
+├── Presentation.pdf    # ← Place here (same folder as HTML)
+│
+└── assets/             # ← Create this folder for graphs
+    ├── masking_random.png
+    ├── masking_span.png
+    ├── masking_block.png
+    ├── masking_mixed.png
+    ├── training_loss_5_models.png
+    ├── image_to_text_results.png
+    └── text_to_image_results.png
+```
+
+---
+
+## How to Customize
+
+### Update GitHub links
+
+Open `data.json` and replace `"https://github.com/USERNAME"` with the actual GitHub profile URL for each team member.
+
+### Add graphs
+
+1. Create an `assets/` folder next to the HTML files.
+2. Place your image files in it (see filenames above).
+3. In `graphs.html`, for each graph: remove the `<div class="graph-placeholder">` block and uncomment the `<img>` tag above it.
+
+### Update PDF files
+
+Place `final_report_IA.pdf` and `Presentation.pdf` in the **same folder** as the HTML files. The download buttons link directly to them.
+
+---
+
+## Pages
+
+| Page | File | Description |
+|---|---|---|
+| Home | `index.html` | Project overview, model cards, results tables |
+| Report | `report.html` | PDF download for the final report |
+| Code | `code.html` | GitHub profiles, implementation details |
+| Slides | `slides.html` | PDF download for the presentation |
+| Graphs | `graphs.html` | Training curves & visual results (add images here) |
+
+---
+
+## Technical Notes
+
+- Pure HTML/CSS/JS — no frameworks, no build step, no backend
+- Responsive design — works on mobile and desktop
+- `data.json` is used to dynamically render model cards and results tables via JavaScript
+- The site degrades gracefully: if `data.json` fails to load, static HTML fallbacks are displayed
+- Google Fonts (DM Sans, Libre Baskerville, IBM Plex Mono) loaded from CDN — requires internet

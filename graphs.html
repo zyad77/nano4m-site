@@ -1,0 +1,305 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphs — nano4M Structured Masking</title>
+  <link rel="stylesheet" href="style.css?v=20260531-1">
+  <style>
+    .chart-container {
+      position: relative; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 32px;
+    }
+    .chart-title { font-family: var(--font-display); font-size: 18px; margin-bottom: 4px; }
+    .chart-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    canvas { width: 100% !important; display: block; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; padding: 4px 10px; border-radius: 100px; border: 1px solid var(--border); transition: opacity 0.2s, background 0.15s; user-select: none; }
+    .legend-item:hover { background: var(--bg-alt); }
+    .legend-item.hidden { opacity: 0.35; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .tooltip-box { position: absolute; background: var(--bg-dark); color: white; padding: 10px 14px; border-radius: var(--radius); font-size: 12px; font-family: var(--font-mono); pointer-events: none; z-index: 10; display: none; min-width: 160px; box-shadow: var(--shadow-md); }
+    .tooltip-box .tt-step { font-size: 11px; opacity: 0.6; margin-bottom: 6px; }
+    .tooltip-box .tt-row { display: flex; justify-content: space-between; gap: 16px; line-height: 1.7; }
+    .tt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+    .panel-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+    .panel-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    .r-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; justify-content: center; }
+    .r-legend-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; cursor: pointer; padding: 3px 9px; border-radius: var(--radius); color: var(--text-muted); transition: opacity 0.2s; }
+    .r-legend-item.hidden { opacity: 0.3; }
+    .r-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    .hm-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .hm-header { display: grid; grid-template-columns: 140px repeat(5, 1fr); border-bottom: 1px solid var(--border); background: var(--bg-dark); padding: 0 16px; }
+    .hm-hcell { padding: 13px 6px; font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.9); text-align: center; font-family: var(--font-display); line-height: 1; }
+    .hm-hcell.first { text-align: left; font-size: 10px; color: rgba(255,255,255,0.3); }
+    .hm-row { display: grid; grid-template-columns: 140px repeat(5, 1fr); padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; }
+    .hm-row:last-child { border-bottom: none; }
+    .hm-metric { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 10px 0; font-family: var(--font-mono); }
+    .hm-cell { padding: 5px 4px; display: flex; justify-content: center; }
+    .chip { width: 100%; max-width: 96px; padding: 9px 5px; border-radius: 5px; font-size: 13px; font-weight: 700; text-align: center; font-family: var(--font-mono); position: relative; cursor: default; transition: transform 0.15s; box-shadow: inset 0 0 0 1px rgba(15,15,15,0.12); }
+    .chip:hover { transform: scale(1.08); z-index: 2; }
+    .chip .star { position: absolute; top: -12px; right: -7px; font-size: 22px; line-height: 1; color: #ef4444; text-shadow: 0 1px 2px rgba(255,255,255,0.85); }
+
+    .summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    @media (max-width: 600px) { .summary-row { grid-template-columns: 1fr; } }
+    .summary-card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+    .summary-badge { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .summary-label { font-size: 11px; color: var(--text-muted); }
+    .summary-val { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+    /* Bar chart */
+    .bar-chart-wrap { position: relative; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+    .bar-tooltip { position: absolute; background: var(--bg-dark); color: white; padding: 9px 13px; border-radius: var(--radius); font-size: 12px; font-family: var(--font-mono); pointer-events: none; z-index: 10; display: none; box-shadow: var(--shadow-md); white-space: nowrap; }
+    .bar-note { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+    /* Eval line chart */
+    .eval-chart-wrap { position: relative; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; }
+    .eval-tooltip { position: absolute; background: var(--bg-dark); color: white; padding: 10px 14px; border-radius: var(--radius); font-size: 12px; font-family: var(--font-mono); pointer-events: none; z-index: 10; display: none; min-width: 170px; box-shadow: var(--shadow-md); }
+    .eval-tooltip .tt-step { font-size: 11px; opacity: 0.5; margin-bottom: 6px; }
+    .eval-tooltip .tt-row { display: flex; justify-content: space-between; gap: 14px; line-height: 1.7; }
+    .eval-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .eval-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); transition: opacity 0.2s, background 0.15s; user-select: none; }
+    .eval-legend-item:hover { background: var(--bg-alt); }
+    .eval-legend-item.hidden { opacity: 0.35; }
+    .eval-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="nano4m.html">nano4M</a></li>
+      <li><a href="report.html">Report</a></li>
+      <li><a href="code.html">Code</a></li>
+      <li><a href="slides.html">Slides</a></li>
+      <li><a href="graphs.html" class="active">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">Visual Results</div>
+    <h1>Graphs &amp; Visual Results</h1>
+    <p>Interactive training curves, evaluation loss, radar charts, and heatmap comparisons.</p>
+  </div>
+</div>
+
+<!-- Training Loss -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Training dynamics</div>
+      <h2>Training Loss Comparison</h2>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Training Loss Across All Five Variants</div>
+      <div class="chart-subtitle">~38,147 steps &middot; 5,000M tokens &middot; smoothed (window=40) &middot; click legend to toggle &middot; hover for values</div>
+      <canvas id="lossChart" height="380"></canvas>
+      <div class="legend" id="lossLegend"></div>
+      <div class="tooltip-box" id="lossTooltip"></div>
+    </div>
+    <div style="padding:14px 18px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text-muted);">
+      <strong style="color:var(--text);">Key observation:</strong> Baseline and V1 reach the lowest training loss (~3.50); V4 sits higher (~3.82); V2 and V3 plateau highest (~4.14). Lower loss &ne; better generation.
+    </div>
+  </div>
+</section>
+
+<!-- Final eval loss bar chart -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Final evaluation loss</div>
+      <h2>Final Evaluation Loss by Masking Strategy</h2>
+      <p>Final eval loss at step 38,140. Lower is better. These are evaluation loss values — not training loss.</p>
+    </div>
+    <div class="bar-chart-wrap">
+      <canvas id="barChart" height="260"></canvas>
+      <div class="bar-tooltip" id="barTooltip"></div>
+      <p class="bar-note">
+        Baseline and V1 (span masking) achieve the lowest final eval loss (~3.53), nearly identical. V4 sits at ~3.85 due to its mixed objective. V2 and V3 plateau highest (~4.15) — block masking creates harder reconstruction tasks, not worse models. Lower eval loss does not directly predict generation quality.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Eval loss line chart -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Evaluation loss over training</div>
+      <h2>Evaluation Loss Comparison</h2>
+      <p>All five variants evaluated every ~760 steps. Hover for exact values. Click legend to toggle variants.</p>
+    </div>
+    <div class="eval-chart-wrap">
+      <canvas id="evalChart" height="320"></canvas>
+      <div class="eval-legend" id="evalLegend"></div>
+      <div class="eval-tooltip" id="evalTooltip"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Radar Charts -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Generation evaluation — radar view</div>
+      <h2>Metric Comparison — Spider Chart</h2>
+      <p>Scores normalized 0–100 per axis (higher = better on all axes). Click legend to show/hide variants.</p>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-tag">Image &rarr; text</div>
+        <div class="panel-title">BLEU-4 &middot; CIDEr &middot; ROUGE-L &middot; Exact Match</div>
+        <div style="position:relative;height:280px">
+          <canvas id="r1" role="img" aria-label="Radar chart image-to-text metrics"></canvas>
+        </div>
+        <div class="r-legend" id="leg1"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-tag">Text &rarr; image</div>
+        <div class="panel-title">CLEVR fidelity &middot; CLIP score &middot; Stability</div>
+        <div style="position:relative;height:280px">
+          <canvas id="r2" role="img" aria-label="Radar chart text-to-image metrics"></canvas>
+        </div>
+        <div class="r-legend" id="leg2"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Heatmap -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Generation evaluation — heatmap view</div>
+      <h2>Metric Comparison — Heatmap</h2>
+      <p>Cell color encodes relative performance across models. ★ = best score per metric. 200 validation samples.</p>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Image &rarr; text</div>
+    <div class="hm-wrap" id="hm-i2t" style="margin-bottom:32px"></div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Text &rarr; image</div>
+    <div class="hm-wrap" id="hm-t2i"></div>
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-badge" style="background:#ede9fe;color:#7c3aed">V4</div>
+        <div><div class="summary-label">Best for image &rarr; text</div><div class="summary-val">BLEU-4 69.64 &middot; CIDEr 37.55</div></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-badge" style="background:#dbeafe;color:#1d4ed8">V1</div>
+        <div><div class="summary-label">Best for text &rarr; image</div><div class="summary-val">CLEVR 0.4735 &middot; CLIP 0.6301</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const MODEL_NAMES = ['Baseline','V1','V2','V3','V4'];
+const MODEL_COLORS = {'Baseline':'#4b5563','V1':'#ef0000','V2':'#0f9f4f','V3':'#d9480f','V4':'#6d28d9'};
+const RADAR_DASH = [[],[6,3],[4,4],[3,3],[8,4]];
+
+const TRAINING_DATA = {"Baseline":{"steps":[0,150,300,450,600,750,900,1050,1200,1350,1500,1650,1800,1950,2100,2250,2400,2550,2700,2850,3000,3150,3300,3450,3600,3750,3900,4050,4200,4350,4500,4650,4800,4950,5100,5250,5400,5550,5700,5850,6000,6150,6300,6450,6600,6750,6900,7050,7200,7350,7500,7650,7800,7950,8100,8250,8400,8550,8700,8850,9000,9150,9300,9450,9600,9750,9900,10050,10200,10350,10500,10650,10800,10950,11100,11250,11400,11550,11700,11850,12000,12150,12300,12450,12600,12750,12900,13050,13200,13350,13500,13650,13800,13950,14100,14250,14400,14550,14700,14850,15000,15150,15300,15450,15600,15750,15900,16050,16200,16350,16500,16650,16800,16950,17100,17250,17400,17550,17700,17850,18000,18150,18300,18450,18600,18750,18900,19050,19200,19350,19500,19650,19800,19950,20100,20250,20400,20550,20700,20850,21000,21150,21300,21450,21600,21750,21900,22050,22200,22350,22500,22650,22800,22950,23100,23250,23400,23550,23700,23850,24000,24150,24300,24450,24600,24750,24900,25050,25200,25350,25500,25650,25800,25950,26100,26250,26400,26550,26700,26850,27000,27150,27300,27450,27600,27750,27900,28050,28200,28350,28500,28650,28800,28950,29100,29250,29400,29550,29700,29850,30000,30150,30300,30450,30600,30750,30900,31050,31200,31350,31500,31650,31800,31950,32100,32250,32400,32550,32700,32850,33000,33150,33300,33450,33600,33750,33900,34050,34200,34350,34500,34650,34800,34950,35100,35250,35400,35550,35700,35850,36000,36150,36300,36450,36600,36750,36900,37050,37200,37350,37500,37650,37800,37950,38100],"losses":[11.0625,10.7306,9.9241,9.0277,7.7745,6.9051,6.1479,5.5716,5.1816,4.9982,4.8915,4.8113,4.736,4.6684,4.6147,4.572,4.5438,4.5193,4.4995,4.478,4.4549,4.4229,4.3951,4.373,4.3563,4.3459,4.3282,4.3165,4.3008,4.2842,4.268,4.2539,4.2392,4.2262,4.2114,4.1961,4.1839,4.1751,4.1648,4.1571,4.1471,4.1384,4.1276,4.1174,4.1094,4.0994,4.0866,4.0767,4.0727,4.0656,4.0609,4.0551,4.0489,4.0396,4.0298,4.025,4.0155,4.0116,4.0071,4.003,3.9956,3.9915,3.986,3.983,3.9747,3.9672,3.9586,3.9523,3.9497,3.946,3.9424,3.9345,3.9318,3.9267,3.9175,3.9134,3.9095,3.9061,3.901,3.8969,3.8921,3.8826,3.8769,3.8706,3.8708,3.8668,3.861,3.8532,3.8494,3.8473,3.8438,3.8349,3.8275,3.8222,3.8245,3.8216,3.8178,3.8123,3.806,3.802,3.7951,3.7934,3.7887,3.7873,3.7798,3.7741,3.7737,3.7719,3.7678,3.7683,3.7676,3.7643,3.756,3.7564,3.7548,3.754,3.7438,3.7415,3.7365,3.7348,3.7323,3.7328,3.7286,3.7236,3.7185,3.7193,3.718,3.7174,3.7128,3.7133,3.7086,3.7053,3.7013,3.6988,3.6907,3.6872,3.6864,3.6853,3.6875,3.6857,3.6819,3.6783,3.675,3.6743,3.6702,3.664,3.6599,3.6583,3.658,3.6555,3.6547,3.6547,3.6542,3.6522,3.6452,3.637,3.6333,3.6348,3.6375,3.6395,3.6332,3.6286,3.6245,3.6196,3.6151,3.6129,3.6143,3.6117,3.6125,3.6099,3.6065,3.6046,3.6027,3.5961,3.5944,3.5926,3.593,3.5912,3.5908,3.586,3.5818,3.5797,3.5786,3.5789,3.5723,3.5712,3.571,3.5717,3.5714,3.5667,3.5668,3.5589,3.5592,3.5619,3.5565,3.5522,3.5481,3.5512,3.5491,3.5487,3.543,3.5451,3.5411,3.5388,3.5382,3.5393,3.5406,3.5329,3.5311,3.5291,3.5302,3.5281,3.5247,3.5295,3.524,3.5234,3.519,3.5197,3.5213,3.5227,3.5237,3.5178,3.5178,3.5139,3.5128,3.5085,3.5079,3.5089,3.5088,3.5069,3.5079,3.5044,3.5051,3.5026,3.5032,3.4983,3.498,3.5019,3.4999,3.4977,3.5018,3.5058,3.5045,3.5036,3.5034,3.5,3.501,3.5007,3.4997,3.4984,3.5005,3.5004,3.5006,3.5064,3.5069]},"V1":{"steps":[0,150,300,450,600,750,900,1050,1200,1350,1500,1650,1800,1950,2100,2250,2400,2550,2700,2850,3000,3150,3300,3450,3600,3750,3900,4050,4200,4350,4500,4650,4800,4950,5100,5250,5400,5550,5700,5850,6000,6150,6300,6450,6600,6750,6900,7050,7200,7350,7500,7650,7800,7950,8100,8250,8400,8550,8700,8850,9000,9150,9300,9450,9600,9750,9900,10050,10200,10350,10500,10650,10800,10950,11100,11250,11400,11550,11700,11850,12000,12150,12300,12450,12600,12750,12900,13050,13200,13350,13500,13650,13800,13950,14100,14250,14400,14550,14700,14850,15000,15150,15300,15450,15600,15750,15900,16050,16200,16350,16500,16650,16800,16950,17100,17250,17400,17550,17700,17850,18000,18150,18300,18450,18600,18750,18900,19050,19200,19350,19500,19650,19800,19950,20100,20250,20400,20550,20700,20850,21000,21150,21300,21450,21600,21750,21900,22050,22200,22350,22500,22650,22800,22950,23100,23250,23400,23550,23700,23850,24000,24150,24300,24450,24600,24750,24900,25050,25200,25350,25500,25650,25800,25950,26100,26250,26400,26550,26700,26850,27000,27150,27300,27450,27600,27750,27900,28050,28200,28350,28500,28650,28800,28950,29100,29250,29400,29550,29700,29850,30000,30150,30300,30450,30600,30750,30900,31050,31200,31350,31500,31650,31800,31950,32100,32250,32400,32550,32700,32850,33000,33150,33300,33450,33600,33750,33900,34050,34200,34350,34500,34650,34800,34950,35100,35250,35400,35550,35700,35850,36000,36150,36300,36450,36600,36750,36900,37050,37200,37350,37500,37650,37800,37950,38100],"losses":[11.0625,10.7306,9.9231,9.0275,7.7788,6.9321,6.1888,5.6162,5.2239,5.0316,4.919,4.8459,4.79,4.7377,4.674,4.6225,4.5829,4.5522,4.527,4.5063,4.4869,4.4612,4.4349,4.4128,4.396,4.3769,4.36,4.343,4.3279,4.3108,4.2964,4.2775,4.2607,4.2477,4.2338,4.2206,4.2084,4.1999,4.1865,4.1789,4.1698,4.1617,4.1485,4.1371,4.1258,4.117,4.1074,4.0988,4.0957,4.0898,4.0821,4.0708,4.0623,4.053,4.0484,4.0399,4.0306,4.0242,4.025,4.0194,4.0116,4.0065,4.0001,3.9949,3.9867,3.9812,3.9779,3.9743,3.966,3.9575,3.9483,3.9463,3.9386,3.939,3.9312,3.9296,3.929,3.9237,3.9147,3.9089,3.9089,3.9006,3.8945,3.8877,3.8901,3.8836,3.8791,3.8722,3.872,3.8703,3.8617,3.8591,3.8546,3.8513,3.8472,3.8444,3.8382,3.8307,3.8228,3.8194,3.8155,3.8173,3.8132,3.8095,3.8021,3.7965,3.7954,3.7966,3.795,3.7909,3.7851,3.7825,3.7802,3.7763,3.7705,3.7677,3.7685,3.7668,3.7619,3.7559,3.7548,3.7507,3.7488,3.7489,3.744,3.7374,3.7298,3.7295,3.7248,3.7216,3.7192,3.7204,3.717,3.7124,3.7084,3.7061,3.7052,3.6992,3.6987,3.6978,3.6998,3.6929,3.6894,3.6852,3.6843,3.6792,3.6742,3.6725,3.6726,3.6701,3.6662,3.6669,3.669,3.6626,3.6583,3.6533,3.6496,3.644,3.6471,3.6489,3.6457,3.6396,3.6353,3.6343,3.6324,3.6263,3.6244,3.624,3.6249,3.6229,3.6178,3.6179,3.6126,3.6081,3.6046,3.6114,3.6095,3.6066,3.5989,3.6,3.5989,3.5984,3.5926,3.5926,3.5899,3.585,3.5809,3.577,3.5733,3.5714,3.5729,3.5729,3.5701,3.5672,3.5632,3.5594,3.5601,3.5609,3.5574,3.5591,3.5563,3.5538,3.5521,3.5519,3.554,3.5554,3.5555,3.5513,3.5506,3.5454,3.5412,3.5345,3.5334,3.5296,3.531,3.53,3.5299,3.5294,3.5314,3.5308,3.5309,3.5273,3.5286,3.5268,3.5224,3.518,3.5193,3.5222,3.5211,3.5201,3.5181,3.5188,3.5173,3.5128,3.5122,3.5128,3.5126,3.5092,3.5027,3.5066,3.512,3.5164,3.5155,3.5174,3.5165,3.5142,3.5127,3.5142,3.5125,3.5097,3.5116,3.5136,3.5096,3.5115,3.5089]},"V2":{"steps":[0,150,300,450,600,750,900,1050,1200,1350,1500,1650,1800,1950,2100,2250,2400,2550,2700,2850,3000,3150,3300,3450,3600,3750,3900,4050,4200,4350,4500,4650,4800,4950,5100,5250,5400,5550,5700,5850,6000,6150,6300,6450,6600,6750,6900,7050,7200,7350,7500,7650,7800,7950,8100,8250,8400,8550,8700,8850,9000,9150,9300,9450,9600,9750,9900,10050,10200,10350,10500,10650,10800,10950,11100,11250,11400,11550,11700,11850,12000,12150,12300,12450,12600,12750,12900,13050,13200,13350,13500,13650,13800,13950,14100,14250,14400,14550,14700,14850,15000,15150,15300,15450,15600,15750,15900,16050,16200,16350,16500,16650,16800,16950,17100,17250,17400,17550,17700,17850,18000,18150,18300,18450,18600,18750,18900,19050,19200,19350,19500,19650,19800,19950,20100,20250,20400,20550,20700,20850,21000,21150,21300,21450,21600,21750,21900,22050,22200,22350,22500,22650,22800,22950,23100,23250,23400,23550,23700,23850,24000,24150,24300,24450,24600,24750,24900,25050,25200,25350,25500,25650,25800,25950,26100,26250,26400,26550,26700,26850,27000,27150,27300,27450,27600,27750,27900,28050,28200,28350,28500,28650,28800,28950,29100,29250,29400,29550,29700,29850,30000,30150,30300,30450,30600,30750,30900,31050,31200,31350,31500,31650,31800,31950,32100,32250,32400,32550,32700,32850,33000,33150,33300,33450,33600,33750,33900,34050,34200,34350,34500,34650,34800,34950,35100,35250,35400,35550,35700,35850,36000,36150,36300,36450,36600,36750,36900,37050,37200,37350,37500,37650,37800,37950,38100],"losses":[11.0625,10.7534,9.9957,9.1485,8.0256,7.3049,6.7464,6.2506,5.8751,5.6805,5.5856,5.5209,5.4654,5.4126,5.3519,5.3028,5.2696,5.2378,5.2105,5.1876,5.1733,5.1552,5.143,5.1277,5.1149,5.1063,5.0859,5.0653,5.0437,5.0281,5.0097,4.9855,4.9664,4.9551,4.938,4.9191,4.907,4.9,4.8873,4.8754,4.856,4.8473,4.8366,4.8296,4.8158,4.8043,4.7889,4.7803,4.7701,4.7608,4.7538,4.7431,4.7387,4.7278,4.7201,4.7088,4.7041,4.702,4.6941,4.689,4.6839,4.6799,4.6708,4.6648,4.6555,4.6498,4.643,4.6338,4.6254,4.6172,4.6107,4.6043,4.5995,4.598,4.592,4.5869,4.5813,4.5828,4.5763,4.5728,4.5701,4.5605,4.5529,4.5469,4.5428,4.5359,4.5332,4.5282,4.5242,4.5207,4.5144,4.5069,4.5007,4.5034,4.5074,4.5012,4.492,4.4864,4.4821,4.4785,4.4736,4.4718,4.4721,4.4657,4.4612,4.4549,4.4529,4.4484,4.444,4.4399,4.4362,4.432,4.4329,4.4273,4.4188,4.417,4.4129,4.4076,4.3986,4.4029,4.4033,4.4027,4.3949,4.3886,4.3867,4.3816,4.3817,4.3835,4.3789,4.3782,4.368,4.3641,4.3534,4.355,4.3503,4.3485,4.3513,4.3532,4.3501,4.3427,4.3387,4.3361,4.3348,4.3319,4.3292,4.3269,4.3249,4.3266,4.3211,4.3222,4.3159,4.3118,4.307,4.3024,4.3004,4.2984,4.2895,4.287,4.2863,4.2861,4.2811,4.2808,4.2755,4.2724,4.2699,4.2652,4.2677,4.2653,4.2626,4.257,4.2553,4.2563,4.2544,4.2488,4.2382,4.2375,4.242,4.2418,4.2442,4.2401,4.2267,4.228,4.2259,4.2319,4.2215,4.2197,4.2135,4.2147,4.2133,4.2103,4.2102,4.2045,4.2087,4.207,4.2076,4.2055,4.2,4.1964,4.1927,4.1934,4.189,4.1923,4.1869,4.1844,4.1758,4.1783,4.1784,4.1769,4.1754,4.173,4.1712,4.1692,4.1674,4.1704,4.1709,4.1652,4.1607,4.1602,4.1619,4.1655,4.1647,4.1609,4.157,4.1568,4.1584,4.1515,4.1515,4.1492,4.1484,4.1479,4.1495,4.1456,4.1459,4.1395,4.1409,4.1385,4.1404,4.1441,4.1434,4.1468,4.1425,4.1389,4.1367,4.1384,4.1374,4.134,4.1334,4.1373,4.1388,4.1424,4.1459,4.1423,4.14,4.139,4.1377]},"V3":{"steps":[0,150,300,450,600,750,900,1050,1200,1350,1500,1650,1800,1950,2100,2250,2400,2550,2700,2850,3000,3150,3300,3450,3600,3750,3900,4050,4200,4350,4500,4650,4800,4950,5100,5250,5400,5550,5700,5850,6000,6150,6300,6450,6600,6750,6900,7050,7200,7350,7500,7650,7800,7950,8100,8250,8400,8550,8700,8850,9000,9150,9300,9450,9600,9750,9900,10050,10200,10350,10500,10650,10800,10950,11100,11250,11400,11550,11700,11850,12000,12150,12300,12450,12600,12750,12900,13050,13200,13350,13500,13650,13800,13950,14100,14250,14400,14550,14700,14850,15000,15150,15300,15450,15600,15750,15900,16050,16200,16350,16500,16650,16800,16950,17100,17250,17400,17550,17700,17850,18000,18150,18300,18450,18600,18750,18900,19050,19200,19350,19500,19650,19800,19950,20100,20250,20400,20550,20700,20850,21000,21150,21300,21450,21600,21750,21900,22050,22200,22350,22500,22650,22800,22950,23100,23250,23400,23550,23700,23850,24000,24150,24300,24450,24600,24750,24900,25050,25200,25350,25500,25650,25800,25950,26100,26250,26400,26550,26700,26850,27000,27150,27300,27450,27600,27750,27900,28050,28200,28350,28500,28650,28800,28950,29100,29250,29400,29550,29700,29850,30000,30150,30300,30450,30600,30750,30900,31050,31200,31350,31500,31650,31800,31950,32100,32250,32400,32550,32700,32850,33000,33150,33300,33450,33600,33750,33900,34050,34200,34350,34500,34650,34800,34950,35100,35250,35400,35550,35700,35850,36000,36150,36300,36450,36600,36750,36900,37050,37200,37350,37500,37650,37800,37950,38100],"losses":[11.0625,10.7526,9.9956,9.1489,8.0271,7.3155,6.7218,6.2206,5.8439,5.6707,5.5827,5.5196,5.4777,5.4304,5.371,5.3175,5.2763,5.2446,5.2162,5.1915,5.1776,5.1588,5.1451,5.134,5.124,5.1095,5.0897,5.0742,5.0496,5.0298,5.0135,4.9953,4.9742,4.9607,4.9496,4.934,4.9132,4.899,4.8859,4.875,4.8568,4.846,4.8335,4.825,4.8186,4.805,4.7973,4.7866,4.7788,4.7725,4.765,4.7589,4.7496,4.7362,4.7189,4.7056,4.7004,4.6981,4.6975,4.6923,4.6902,4.6841,4.6762,4.6676,4.6592,4.6554,4.6472,4.6394,4.6366,4.6302,4.6249,4.618,4.6099,4.6056,4.5902,4.5867,4.587,4.5868,4.5821,4.5786,4.5774,4.5717,4.5622,4.5527,4.5497,4.5485,4.5429,4.5388,4.5354,4.5306,4.5234,4.5188,4.514,4.5087,4.5058,4.5064,4.5055,4.496,4.4909,4.4907,4.4904,4.4825,4.478,4.4722,4.4722,4.4639,4.4576,4.4529,4.457,4.4491,4.4408,4.4375,4.4322,4.4259,4.4223,4.4179,4.4226,4.4203,4.4136,4.4111,4.4069,4.4036,4.398,4.3943,4.3912,4.3874,4.3819,4.3876,4.3857,4.3886,4.3738,4.3647,4.3663,4.3667,4.365,4.3558,4.352,4.3501,4.3493,4.3443,4.3425,4.3431,4.3382,4.3349,4.3347,4.3265,4.3247,4.3257,4.323,4.3186,4.3143,4.3028,4.2967,4.2987,4.3045,4.3048,4.2993,4.2916,4.289,4.2875,4.2841,4.2832,4.2805,4.2755,4.2753,4.2693,4.2655,4.2596,4.2611,4.2554,4.2542,4.2534,4.2493,4.2458,4.2372,4.237,4.2324,4.2329,4.2309,4.2372,4.2356,4.2344,4.2318,4.2271,4.2197,4.2131,4.2153,4.2191,4.2176,4.2127,4.2058,4.2,4.1978,4.2028,4.202,4.1972,4.1898,4.1866,4.1812,4.1828,4.1873,4.1881,4.1853,4.1834,4.1831,4.1777,4.1739,4.1704,4.1736,4.169,4.1638,4.159,4.1604,4.1585,4.157,4.1537,4.152,4.1517,4.1496,4.1531,4.154,4.1535,4.1577,4.1514,4.146,4.1431,4.1404,4.1412,4.1379,4.1428,4.1397,4.1339,4.133,4.1371,4.1393,4.1308,4.1265,4.1288,4.1344,4.1341,4.1304,4.1258,4.1238,4.1246,4.1229,4.1269,4.128,4.1338,4.133,4.1354,4.1298,4.1277,4.1296,4.132,4.1302]},"V4":{"steps":[0,150,300,450,600,750,900,1050,1200,1350,1500,1650,1800,1950,2100,2250,2400,2550,2700,2850,3000,3150,3300,3450,3600,3750,3900,4050,4200,4350,4500,4650,4800,4950,5100,5250,5400,5550,5700,5850,6000,6150,6300,6450,6600,6750,6900,7050,7200,7350,7500,7650,7800,7950,8100,8250,8400,8550,8700,8850,9000,9150,9300,9450,9600,9750,9900,10050,10200,10350,10500,10650,10800,10950,11100,11250,11400,11550,11700,11850,12000,12150,12300,12450,12600,12750,12900,13050,13200,13350,13500,13650,13800,13950,14100,14250,14400,14550,14700,14850,15000,15150,15300,15450,15600,15750,15900,16050,16200,16350,16500,16650,16800,16950,17100,17250,17400,17550,17700,17850,18000,18150,18300,18450,18600,18750,18900,19050,19200,19350,19500,19650,19800,19950,20100,20250,20400,20550,20700,20850,21000,21150,21300,21450,21600,21750,21900,22050,22200,22350,22500,22650,22800,22950,23100,23250,23400,23550,23700,23850,24000,24150,24300,24450,24600,24750,24900,25050,25200,25350,25500,25650,25800,25950,26100,26250,26400,26550,26700,26850,27000,27150,27300,27450,27600,27750,27900,28050,28200,28350,28500,28650,28800,28950,29100,29250,29400,29550,29700,29850,30000,30150,30300,30450,30600,30750,30900,31050,31200,31350,31500,31650,31800,31950,32100,32250,32400,32550,32700,32850,33000,33150,33300,33450,33600,33750,33900,34050,34200,34350,34500,34650,34800,34950,35100,35250,35400,35550,35700,35850,36000,36150,36300,36450,36600,36750,36900,37050,37200,37350,37500,37650,37800,37950,38100],"losses":[11.0625,10.7418,9.9655,9.1009,7.9239,7.1208,6.4172,5.8625,5.4901,5.3226,5.2354,5.1689,5.1042,5.0425,4.9769,4.9326,4.9026,4.8753,4.8518,4.8388,4.8293,4.8108,4.7929,4.7699,4.7514,4.7296,4.7081,4.6898,4.6735,4.6571,4.6402,4.6222,4.605,4.5852,4.5722,4.5592,4.5499,4.5367,4.5226,4.5119,4.4977,4.4828,4.4685,4.4601,4.4529,4.4417,4.4318,4.4198,4.4129,4.4083,4.405,4.3922,4.3892,4.3829,4.3744,4.3659,4.3538,4.3449,4.3424,4.3383,4.3387,4.332,4.3249,4.314,4.306,4.3017,4.2927,4.2858,4.2809,4.2781,4.275,4.2707,4.2646,4.2571,4.2501,4.2468,4.2483,4.2393,4.2324,4.2275,4.2267,4.2198,4.2162,4.211,4.2063,4.2005,4.1995,4.1934,4.1919,4.1903,4.187,4.1804,4.1748,4.1665,4.1668,4.1609,4.1569,4.1544,4.1502,4.1442,4.1388,4.136,4.1368,4.13,4.1242,4.1221,4.1211,4.12,4.1092,4.101,4.1035,4.106,4.1023,4.0986,4.0904,4.0881,4.0799,4.0756,4.0736,4.0695,4.0731,4.0708,4.0695,4.0696,4.0712,4.0681,4.0633,4.0567,4.0451,4.0399,4.0343,4.0361,4.0357,4.031,4.0202,4.0218,4.0228,4.0211,4.0202,4.0173,4.0147,4.0119,4.0067,4.0031,4.0012,3.9955,3.9883,3.9909,3.9856,3.9832,3.9831,3.9841,3.9824,3.9832,3.9795,3.9777,3.9684,3.9639,3.9636,3.9648,3.9598,3.958,3.9542,3.9481,3.9444,3.943,3.9436,3.9391,3.9405,3.9392,3.9365,3.931,3.9262,3.923,3.9236,3.9228,3.9174,3.9144,3.9133,3.9097,3.9088,3.9064,3.9095,3.9087,3.9026,3.8986,3.8982,3.8957,3.8885,3.8861,3.8907,3.8906,3.8836,3.8793,3.8813,3.8799,3.8779,3.8738,3.8706,3.8706,3.8686,3.8681,3.8664,3.8659,3.8635,3.8662,3.8683,3.858,3.8525,3.842,3.8446,3.8447,3.8449,3.844,3.8413,3.843,3.8395,3.8385,3.8393,3.8442,3.8413,3.8329,3.8339,3.8273,3.8305,3.829,3.8281,3.8295,3.8288,3.8301,3.8292,3.8217,3.8182,3.8152,3.8261,3.8231,3.8258,3.822,3.8219,3.8157,3.8135,3.8164,3.8217,3.827,3.8191,3.8168,3.8154,3.8211,3.8235,3.8182,3.8188,3.8175,3.8172,3.8221,3.8169]}};
+
+const EVAL_DATA = {"Baseline":{"steps":[760,1520,2280,3050,3810,4570,5340,6100,6860,7620,8390,9150,9910,10680,11440,12200,12970,13730,14490,15250,16020,16780,17540,18310,19070,19830,20600,21360,22120,22880,23650,24410,25170,25940,26700,27460,28230,28990,29750,30510,31280,32040,32800,33570,34330,35090,35860,36620,37380,38140],"losses":[5.7653,4.7854,4.5372,4.3984,4.3444,4.248,4.2014,4.1376,4.0986,4.0689,4.0378,4.0052,3.9689,3.9523,3.9121,3.8941,3.847,3.8316,3.8172,3.8245,3.7802,3.7528,3.7481,3.7487,3.7331,3.7009,3.6945,3.6792,3.6724,3.6487,3.6464,3.6432,3.6149,3.604,3.5942,3.5767,3.5807,3.5603,3.572,3.5635,3.5497,3.5349,3.5326,3.5219,3.5218,3.5387,3.5391,3.521,3.5109,3.5276]},"V1":{"steps":[760,1520,2280,3050,3810,4570,5340,6100,6860,7620,8390,9150,9910,10680,11440,12200,12970,13730,14490,15250,16020,16780,17540,18310,19070,19830,20600,21360,22120,22880,23650,24410,25170,25940,26700,27460,28230,28990,29750,30510,31280,32040,32800,33570,34330,35090,35860,36620,37380,38140],"losses":[5.7808,4.8142,4.5627,4.454,4.3691,4.2848,4.2086,4.1562,4.0962,4.0744,4.0497,3.9857,3.9793,3.9491,3.9386,3.9073,3.9079,3.8537,3.8568,3.8337,3.8073,3.7949,3.7618,3.7495,3.7466,3.7085,3.7093,3.705,3.7026,3.6807,3.6409,3.6546,3.6387,3.6166,3.6121,3.6014,3.5895,3.593,3.5704,3.5721,3.5699,3.5618,3.5462,3.5471,3.5243,3.5289,3.5286,3.5251,3.528,3.5413]},"V2":{"steps":[760,1520,2280,3050,3810,4570,5340,6100,6860,7620,8390,9150,9910,10680,11440,12200,12970,13730,14490,15250,16020,16780,17540,18310,19070,19830,20600,21360,22120,22880,23650,24410,25170,25940,26700,27460,28230,28990,29750,30510,31280,32040,32800,33570,34330,35090,35860,36620,37380,38140],"losses":[6.6394,5.4831,5.2629,5.1785,5.0988,4.9939,4.9001,4.837,4.7829,4.7628,4.7151,4.6729,4.6503,4.6122,4.5749,4.5901,4.5222,4.5111,4.5229,4.4937,4.4405,4.4595,4.4121,4.3964,4.3814,4.3953,4.3367,4.3506,4.3499,4.3206,4.3014,4.2957,4.2758,4.2784,4.231,4.2347,4.2421,4.2138,4.1985,4.2061,4.2177,4.1755,4.1497,4.1843,4.1659,4.1408,4.1761,4.1603,4.161,4.1555]},"V3":{"steps":[760,1520,2280,3050,3810,4570,5340,6100,6860,7620,7630,8390,9150,9910,10680,11440,12200,12970,13730,14490,15250,16020,16780,17540,18310,19070,19830,20600,21360,22120,22880,23650,24410,25170,25940,26700,27460,28230,28990,29750,30370,31280,32040,32800,33570,34330,35090,35860,36620,37380,38140],"losses":[6.4578,5.5009,5.2412,5.1575,5.099,5.0153,4.9215,4.8591,4.8068,4.7439,4.7481,4.7061,4.6921,4.6578,4.622,4.5849,4.5759,4.537,4.5096,4.4981,4.4738,4.4544,4.4339,4.445,4.403,4.407,4.3805,4.3594,4.3489,4.3237,4.3262,4.3305,4.2883,4.2923,4.2607,4.2566,4.2457,4.2389,4.2415,4.2085,4.1917,4.188,4.1915,4.1785,4.1658,4.1542,4.174,4.1556,4.1406,4.1528,4.1425]},"V4":{"steps":[760,1520,2280,3050,3810,4570,5340,6100,6860,7620,8390,9150,9910,10680,11440,12200,12970,13730,14490,15250,16020,16780,17540,18310,19070,19830,20600,21360,22120,22880,23650,24410,25170,25940,26700,27460,28230,28990,29750,30510,31280,32040,32800,33570,34330,35090,35860,36620,37380,38140],"losses":[6.038,5.1518,4.888,4.8019,4.7209,4.6241,4.5391,4.4944,4.428,4.3998,4.348,4.3303,4.3121,4.2708,4.2365,4.2247,4.2025,4.1978,4.1717,4.1445,4.1352,4.1039,4.0915,4.0599,4.0709,4.0543,4.0184,4.0113,4.0104,3.9899,4.0139,3.9599,3.9587,3.9502,3.9245,3.9299,3.9104,3.8958,3.8924,3.8973,3.8778,3.8683,3.8722,3.8323,3.8651,3.8405,3.8325,3.8519,3.8427,3.8537]}};
+
+const FINAL_EVAL = [
+  {model:'Baseline', strategy:'Random masking',          loss:3.5276},
+  {model:'V1',       strategy:'Span masking only',       loss:3.5413},
+  {model:'V2',       strategy:'Block masking only',      loss:4.1555},
+  {model:'V3',       strategy:'Span + Block masking',    loss:4.1425},
+  {model:'V4',       strategy:'Span+Block+Random (mix)', loss:3.8537},
+];
+
+const I2T_RAW = {'Baseline':[69.59,37.07,84.31,4.00],'V1':[67.60,35.38,83.03,3.50],'V2':[68.70,34.40,83.67,4.00],'V3':[68.51,33.58,83.72,2.00],'V4':[69.64,37.55,84.07,4.00]};
+const T2I_RAW = {'Baseline':[0.4226,0.6287,0.298],'V1':[0.4735,0.6301,0.287],'V2':[0.4440,0.6275,0.304],'V3':[0.4340,0.6271,0.299],'V4':[0.4266,0.6260,0.311]};
+const HM_PALETTES = {'Baseline':{from:[226,232,240],to:[51,65,85]},'V1':{from:[255,205,205],to:[239,0,0]},'V2':{from:[187,247,208],to:[21,128,61]},'V3':{from:[254,215,170],to:[194,65,12]},'V4':{from:[221,214,254],to:[109,40,217]}};
+
+/* ---- Training loss ---- */
+function initLossChart() {
+  const canvas=document.getElementById('lossChart'),tooltip=document.getElementById('lossTooltip'),legendEl=document.getElementById('lossLegend'),ctx=canvas.getContext('2d');
+  const DPR=window.devicePixelRatio||1,W=canvas.parentElement.clientWidth-48,H=380;
+  canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.scale(DPR,DPR);
+  const PAD={top:20,right:20,bottom:50,left:52},CW=W-PAD.left-PAD.right,CH=H-PAD.top-PAD.bottom;
+  const minStep=0,maxStep=38150,minLoss=3.4,maxLoss=11.2;
+  const toX=s=>PAD.left+(s-minStep)/(maxStep-minStep)*CW,toY=l=>PAD.top+(1-(l-minLoss)/(maxLoss-minLoss))*CH;
+  const visible={};MODEL_NAMES.forEach(n=>visible[n]=true);
+  function draw(){ctx.clearRect(0,0,W,H);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;[4,5,6,7,8,9,10,11].forEach(v=>{ctx.beginPath();ctx.moveTo(PAD.left,toY(v));ctx.lineTo(W-PAD.right,toY(v));ctx.stroke();ctx.fillStyle='#94a3b8';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText(v.toFixed(0),PAD.left-6,toY(v)+4);});[0,5000,10000,15000,20000,25000,30000,35000,38147].forEach(v=>{ctx.beginPath();ctx.moveTo(toX(v),PAD.top+CH);ctx.lineTo(toX(v),PAD.top+CH+5);ctx.strokeStyle='#cbd5e1';ctx.stroke();ctx.fillStyle='#94a3b8';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='center';ctx.fillText(v===0?'0':(v/1000)+'k',toX(v),PAD.top+CH+18);});ctx.fillStyle='#64748b';ctx.font='12px DM Sans,sans-serif';ctx.textAlign='center';ctx.fillText('Training steps',PAD.left+CW/2,H-6);ctx.save();ctx.translate(14,PAD.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillText('Training loss',0,0);ctx.restore();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+CH);ctx.lineTo(PAD.left+CW,PAD.top+CH);ctx.stroke();MODEL_NAMES.forEach(name=>{if(!visible[name])return;const d=TRAINING_DATA[name];ctx.strokeStyle=MODEL_COLORS[name];ctx.lineWidth=2;ctx.setLineDash(name==='Baseline'?[6,3]:[]);ctx.lineJoin='round';ctx.beginPath();d.steps.forEach((s,i)=>{const x=toX(s),y=toY(d.losses[i]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();ctx.setLineDash([]);});}
+  MODEL_NAMES.forEach(name=>{const item=document.createElement('div');item.className='legend-item';item.innerHTML=`<span class="legend-dot" style="background:${MODEL_COLORS[name]}"></span>${name}`;item.addEventListener('click',()=>{visible[name]=!visible[name];item.classList.toggle('hidden',!visible[name]);draw();});legendEl.appendChild(item);});
+  canvas.addEventListener('mousemove',e=>{const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;if(mx<PAD.left||mx>W-PAD.right){tooltip.style.display='none';return;}const step=Math.round(((mx-PAD.left)/CW)*(maxStep-minStep)+minStep),steps=TRAINING_DATA['Baseline'].steps;let closest=0;steps.forEach((s,i)=>{if(Math.abs(s-step)<Math.abs(steps[closest]-step))closest=i;});let html=`<div class="tt-step">Step ${steps[closest].toLocaleString()}</div>`;MODEL_NAMES.forEach(name=>{if(!visible[name])return;html+=`<div class="tt-row"><span><span class="tt-dot" style="background:${MODEL_COLORS[name]}"></span>${name}</span><span>${TRAINING_DATA[name].losses[closest].toFixed(4)}</span></div>`;});tooltip.innerHTML=html;tooltip.style.display='block';tooltip.style.left=Math.min(mx+16,W-180)+'px';tooltip.style.top=Math.max(my-30,10)+'px';draw();const cx=toX(steps[closest]);ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(cx,PAD.top);ctx.lineTo(cx,PAD.top+CH);ctx.stroke();ctx.setLineDash([]);MODEL_NAMES.forEach(name=>{if(!visible[name])return;ctx.beginPath();ctx.arc(cx,toY(TRAINING_DATA[name].losses[closest]),4,0,Math.PI*2);ctx.fillStyle=MODEL_COLORS[name];ctx.fill();});});
+  canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';draw();});draw();
+  window.addEventListener('resize',()=>{const NW=canvas.parentElement.clientWidth-48;canvas.width=NW*DPR;canvas.style.width=NW+'px';ctx.scale(DPR,DPR);draw();});
+}
+
+/* ---- Bar chart ---- */
+function initBarChart() {
+  const canvas=document.getElementById('barChart'),tooltip=document.getElementById('barTooltip'),ctx=canvas.getContext('2d');
+  const DPR=window.devicePixelRatio||1,W=canvas.parentElement.clientWidth-48,H=260;
+  canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.scale(DPR,DPR);
+  const PAD={top:40,right:20,bottom:48,left:52},CW=W-PAD.left-PAD.right,CH=H-PAD.top-PAD.bottom;
+  const minVal=3.3,maxVal=4.4,n=FINAL_EVAL.length,barW=Math.min(70,CW/n*0.55),gap=CW/n;
+  const toY=v=>PAD.top+(1-(v-minVal)/(maxVal-minVal))*CH,barX=i=>PAD.left+gap*i+(gap-barW)/2;
+  function draw(hov){ctx.clearRect(0,0,W,H);[3.4,3.6,3.8,4.0,4.2,4.4].forEach(v=>{ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.left,toY(v));ctx.lineTo(W-PAD.right,toY(v));ctx.stroke();ctx.fillStyle='#94a3b8';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText(v.toFixed(1),PAD.left-6,toY(v)+4);});ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+CH);ctx.lineTo(PAD.left+CW,PAD.top+CH);ctx.stroke();ctx.save();ctx.translate(13,PAD.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='#64748b';ctx.font='11px DM Sans,sans-serif';ctx.textAlign='center';ctx.fillText('Final eval loss',0,0);ctx.restore();FINAL_EVAL.forEach((d,i)=>{const x=barX(i),y=toY(d.loss),bh=toY(minVal)-y,isHov=hov===i,col=MODEL_COLORS[d.model];ctx.fillStyle=isHov?col:col+'cc';const r=4;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);ctx.lineTo(x+barW,y+bh);ctx.lineTo(x,y+bh);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();ctx.fillStyle=isHov?col:'#475569';ctx.font=`${isHov?600:500} 12px IBM Plex Mono,monospace`;ctx.textAlign='center';ctx.fillText(d.loss.toFixed(4),x+barW/2,y-7);ctx.fillStyle='#475569';ctx.font='12px IBM Plex Mono,monospace';ctx.fillText(d.model,x+barW/2,PAD.top+CH+18);});}
+  draw(-1);
+  canvas.addEventListener('mousemove',e=>{const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left;let found=-1;FINAL_EVAL.forEach((d,i)=>{const x=barX(i);if(mx>=x&&mx<=x+barW)found=i;});draw(found);if(found>=0){const d=FINAL_EVAL[found];tooltip.innerHTML=`<strong style="color:${MODEL_COLORS[d.model]}">${d.model}</strong><br>${d.strategy}<br>Eval loss: <strong>${d.loss.toFixed(4)}</strong>`;tooltip.style.display='block';tooltip.style.left=Math.min(mx+16,W-160)+'px';tooltip.style.top='30px';}else{tooltip.style.display='none';}});
+  canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';draw(-1);});
+  window.addEventListener('resize',()=>{const NW=canvas.parentElement.clientWidth-48;canvas.width=NW*DPR;canvas.style.width=NW+'px';ctx.scale(DPR,DPR);draw(-1);});
+}
+
+/* ---- Eval line chart ---- */
+function initEvalChart() {
+  const canvas=document.getElementById('evalChart'),tooltip=document.getElementById('evalTooltip'),legendEl=document.getElementById('evalLegend'),ctx=canvas.getContext('2d');
+  const DPR=window.devicePixelRatio||1,W=canvas.parentElement.clientWidth-48,H=320;
+  canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.scale(DPR,DPR);
+  const PAD={top:16,right:16,bottom:46,left:50},CW=W-PAD.left-PAD.right,CH=H-PAD.top-PAD.bottom;
+  const minStep=0,maxStep=38500,minLoss=3.4,maxLoss=6.8;
+  const toX=s=>PAD.left+(s-minStep)/(maxStep-minStep)*CW,toY=l=>PAD.top+(1-(l-minLoss)/(maxLoss-minLoss))*CH;
+  const visible={};MODEL_NAMES.forEach(n=>visible[n]=true);
+  function draw(){ctx.clearRect(0,0,W,H);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;[3.5,4,4.5,5,5.5,6,6.5].forEach(v=>{ctx.beginPath();ctx.moveTo(PAD.left,toY(v));ctx.lineTo(W-PAD.right,toY(v));ctx.stroke();ctx.fillStyle='#94a3b8';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText(v.toFixed(1),PAD.left-6,toY(v)+4);});[0,5000,10000,15000,20000,25000,30000,35000,38140].forEach(v=>{ctx.beginPath();ctx.moveTo(toX(v),PAD.top+CH);ctx.lineTo(toX(v),PAD.top+CH+5);ctx.strokeStyle='#cbd5e1';ctx.stroke();ctx.fillStyle='#94a3b8';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='center';ctx.fillText(v===0?'0':(v/1000)+'k',toX(v),PAD.top+CH+18);});ctx.fillStyle='#64748b';ctx.font='12px DM Sans,sans-serif';ctx.textAlign='center';ctx.fillText('Training steps',PAD.left+CW/2,H-4);ctx.save();ctx.translate(13,PAD.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillText('Evaluation loss',0,0);ctx.restore();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.left,PAD.top);ctx.lineTo(PAD.left,PAD.top+CH);ctx.lineTo(PAD.left+CW,PAD.top+CH);ctx.stroke();MODEL_NAMES.forEach(name=>{if(!visible[name])return;const d=EVAL_DATA[name];ctx.strokeStyle=MODEL_COLORS[name];ctx.lineWidth=2;ctx.setLineDash(name==='Baseline'?[6,3]:[]);ctx.lineJoin='round';ctx.beginPath();d.steps.forEach((s,i)=>{const x=toX(s),y=toY(d.losses[i]);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=MODEL_COLORS[name];d.steps.forEach((s,i)=>{ctx.beginPath();ctx.arc(toX(s),toY(d.losses[i]),2.5,0,Math.PI*2);ctx.fill();});})}
+  MODEL_NAMES.forEach(name=>{const item=document.createElement('div');item.className='eval-legend-item';item.innerHTML=`<span class="eval-legend-dot" style="background:${MODEL_COLORS[name]}"></span>${name}`;item.addEventListener('click',()=>{visible[name]=!visible[name];item.classList.toggle('hidden',!visible[name]);draw();});legendEl.appendChild(item);});
+  canvas.addEventListener('mousemove',e=>{const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;if(mx<PAD.left||mx>W-PAD.right){tooltip.style.display='none';return;}const step=Math.round(((mx-PAD.left)/CW)*(maxStep-minStep)+minStep),refSteps=EVAL_DATA['Baseline'].steps;let closest=0;refSteps.forEach((s,i)=>{if(Math.abs(s-step)<Math.abs(refSteps[closest]-step))closest=i;});let html=`<div class="tt-step">Step ${refSteps[closest].toLocaleString()}</div>`;MODEL_NAMES.forEach(name=>{if(!visible[name])return;const d=EVAL_DATA[name],idx=Math.min(closest,d.losses.length-1);html+=`<div class="tt-row"><span><span class="tt-dot" style="background:${MODEL_COLORS[name]}"></span>${name}</span><span>${d.losses[idx].toFixed(4)}</span></div>`;});tooltip.innerHTML=html;tooltip.style.display='block';tooltip.style.left=Math.min(mx+16,W-180)+'px';tooltip.style.top=Math.max(my-30,10)+'px';draw();const cx=toX(refSteps[closest]);ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(cx,PAD.top);ctx.lineTo(cx,PAD.top+CH);ctx.stroke();ctx.setLineDash([]);MODEL_NAMES.forEach(name=>{if(!visible[name])return;const d=EVAL_DATA[name],idx=Math.min(closest,d.losses.length-1);ctx.beginPath();ctx.arc(cx,toY(d.losses[idx]),4,0,Math.PI*2);ctx.fillStyle=MODEL_COLORS[name];ctx.fill();});});
+  canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';draw();});draw();
+  window.addEventListener('resize',()=>{const NW=canvas.parentElement.clientWidth-48;canvas.width=NW*DPR;canvas.style.width=NW+'px';ctx.scale(DPR,DPR);draw();});
+}
+
+/* ---- Radar ---- */
+function normAxis(vals,hb){const mn=Math.min(...vals),mx=Math.max(...vals);return vals.map(v=>{const n=mx===mn?0.5:(v-mn)/(mx-mn);return hb?n:1-n;});}
+function makeRadarDatasets(raw,hbArr){const nM=Object.values(raw)[0].length,normed={};for(let mi=0;mi<nM;mi++){const vals=MODEL_NAMES.map(m=>raw[m][mi]),ns=normAxis(vals,hbArr[mi]);MODEL_NAMES.forEach((m,i)=>{if(!normed[m])normed[m]=[];normed[m].push(+(ns[i]*100).toFixed(1));});}return MODEL_NAMES.map((m,i)=>({label:m,data:normed[m],borderColor:MODEL_COLORS[m],backgroundColor:MODEL_COLORS[m]+'22',borderWidth:2,borderDash:RADAR_DASH[i],pointBackgroundColor:MODEL_COLORS[m],pointRadius:4,pointHoverRadius:6}));}
+function makeRadarLegend(id,chartRef){const el=document.getElementById(id);MODEL_NAMES.forEach((m,i)=>{const sp=document.createElement('span');sp.className='r-legend-item';sp.style.border=`1px solid ${MODEL_COLORS[m]}44`;sp.innerHTML=`<span class="r-dot" style="background:${MODEL_COLORS[m]}"></span>${m}`;let hidden=false;sp.addEventListener('click',()=>{hidden=!hidden;sp.classList.toggle('hidden',hidden);chartRef.data.datasets[i].hidden=hidden;chartRef.update();});el.appendChild(sp);});}
+const radarOpts=()=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.r.toFixed(0)}`}}},scales:{r:{min:0,max:100,ticks:{display:false,stepSize:25},grid:{color:'rgba(128,128,128,0.12)'},angleLines:{color:'rgba(128,128,128,0.18)'},pointLabels:{font:{size:11},color:'#888'}}}});
+
+/* ---- Heatmap ---- */
+function buildHeatmap(containerId,raw,metrics,hbArr,decimals){const el=document.getElementById(containerId),bests=metrics.map((_,mi)=>{const vals=MODEL_NAMES.map(m=>raw[m][mi]);return hbArr[mi]?Math.max(...vals):Math.min(...vals);});function chipStyle(model,val,vals,hb){const mn=Math.min(...vals),mx=Math.max(...vals);let n=mx===mn?0.5:(val-mn)/(mx-mn);if(!hb)n=1-n;n=Math.max(0,Math.min(1,n));const p=HM_PALETTES[model],r=Math.round(p.from[0]+(p.to[0]-p.from[0])*n),g=Math.round(p.from[1]+(p.to[1]-p.from[1])*n),b=Math.round(p.from[2]+(p.to[2]-p.from[2])*n),text=n>0.52?'#ffffff':'#111111';return`background:rgb(${r},${g},${b});color:${text};`;}let html=`<div class="hm-header"><div class="hm-hcell first">metric</div>`;MODEL_NAMES.forEach(m=>{html+=`<div class="hm-hcell" style="color:${MODEL_COLORS[m]};opacity:1">${m}</div>`;});html+=`</div>`;metrics.forEach((metric,mi)=>{const vals=MODEL_NAMES.map(m=>raw[m][mi]);html+=`<div class="hm-row"><div class="hm-metric">${metric}</div>`;MODEL_NAMES.forEach(m=>{const v=raw[m][mi],isBest=v===bests[mi];html+=`<div class="hm-cell"><div class="chip" style="${chipStyle(m,v,vals,hbArr[mi])}">${isBest?'<span class="star">★</span>':''}${v.toFixed(decimals[mi])}</div></div>`;});html+=`</div>`;});el.innerHTML=html;}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initLossChart();
+  initBarChart();
+  initEvalChart();
+  const chart1=new Chart(document.getElementById('r1'),{type:'radar',data:{labels:['BLEU-4','CIDEr','ROUGE-L','Exact Match'],datasets:makeRadarDatasets(I2T_RAW,[true,true,true,true])},options:radarOpts()});
+  const chart2=new Chart(document.getElementById('r2'),{type:'radar',data:{labels:['CLEVR fidelity','CLIP score','Stability'],datasets:makeRadarDatasets(T2I_RAW,[true,true,false])},options:radarOpts()});
+  makeRadarLegend('leg1',chart1);makeRadarLegend('leg2',chart2);
+  buildHeatmap('hm-i2t',I2T_RAW,['BLEU-4','CIDEr','ROUGE-L','Exact Match'],[true,true,true,true],[2,2,2,2]);
+  buildHeatmap('hm-t2i',T2I_RAW,['CLEVR fidelity ↑','CLIP score ↑','Std (CLEVR) ↓'],[true,true,false],[4,4,3]);
+});
+</script>
+</body>
+</html>

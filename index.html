@@ -1,0 +1,526 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nano4M Structured Masking — COM-304 EPFL</title>
+  <link rel="stylesheet" href="style.css?v=20260531-2">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="nano4m.html">nano4M</a></li>
+      <li><a href="report.html">Report</a></li>
+      <li><a href="code.html">Code</a></li>
+      <li><a href="slides.html">Slides</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="container">
+    <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="hero-label">COM-304 Foundation Models &nbsp;&middot;&nbsp; EPFL &nbsp;&middot;&nbsp; 2026</div>
+    <h1>Structured Masking Strategies for nano4M on MultiCLEVR</h1>
+    <p class="hero-subtitle">Comparing random, span, block, and mixed masking for multimodal pretraining</p>
+    <div class="team-grid">
+      <button class="team-pill" type="button" data-name="Ayman Belbachir" data-email="ayman.belbachir@epfl.ch">
+        <div class="team-pill-avatar">AB</div>
+        <span class="team-pill-text">Ayman Belbachir</span>
+        <span class="team-pill-email">ayman.belbachir@epfl.ch</span>
+      </button>
+      <button class="team-pill" type="button" data-name="Zyad Tajeddine" data-email="zyad.tajeddine@epfl.ch">
+        <div class="team-pill-avatar">ZT</div>
+        <span class="team-pill-text">Zyad Tajeddine</span>
+        <span class="team-pill-email">zyad.tajeddine@epfl.ch</span>
+      </button>
+      <button class="team-pill" type="button" data-name="Ali Tahri Hassani" data-email="ali.tahrihassani@epfl.ch">
+        <div class="team-pill-avatar">AT</div>
+        <span class="team-pill-text">Ali Tahri Hassani</span>
+        <span class="team-pill-email">ali.tahrihassani@epfl.ch</span>
+      </button>
+      <button class="team-pill" type="button" data-name="Nour Alaoui Ismaili" data-email="nour.alaouiismaili@epfl.ch">
+        <div class="team-pill-avatar">NA</div>
+        <span class="team-pill-text">Nour Alaoui Ismaili</span>
+        <span class="team-pill-email">nour.alaouiismaili@epfl.ch</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">About the project</div>
+      <h2>From Random to Structured Masking</h2>
+      <p>The baseline nano4M model uses random masking. Our project compares structured masking strategies that respect modality structure: span masking for text, block masking for image tokens, and mixed random/structured strategies — keeping the architecture, dataset, and compute budget fixed.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:32px;">
+      <div style="padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div class="about-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h7"/></svg></div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Text Modality</h3>
+        <p style="font-size:13px;color:var(--text-muted);">Scene descriptions are sequential. Span masking removes contiguous token segments — a harder, more linguistically natural objective.</p>
+      </div>
+      <div style="padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div class="about-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m7 15 3-3 3 3 2-2 3 3"/><circle cx="8" cy="9" r="1"/></svg></div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Image Modalities</h3>
+        <p style="font-size:13px;color:var(--text-muted);">RGB, depth, and normal tokens form a 16×16 spatial grid. Block masking removes rectangular regions, forcing the model to reason about coherent missing areas.</p>
+      </div>
+      <div style="padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div class="about-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px;">Key Finding</h3>
+        <p style="font-size:13px;color:var(--text-muted);">No universal best strategy. Structured masking helps only when aligned with the generation direction. Training loss alone is insufficient to rank strategies.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Resources</div>
+      <h2>Project Materials</h2>
+    </div>
+    <div class="nav-cards">
+      <a href="report.html" class="nav-card">
+        <div class="nav-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></div>
+        <h3>Final Report</h3>
+        <p>Full technical report: methods, experiments, results, and individual contributions.</p>
+        <span class="arrow">&rarr;</span>
+      </a>
+      <a href="code.html" class="nav-card">
+        <div class="nav-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg></div>
+        <h3>Code &amp; Implementation</h3>
+        <p>GitHub profiles, what we built, and task distribution across team members.</p>
+        <span class="arrow">&rarr;</span>
+      </a>
+      <a href="Presentation.pdf" target="_blank" class="nav-card">
+        <div class="nav-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M3 9h18M3 15h18"/></svg></div>
+        <h3>Presentation Slides</h3>
+        <p>Full slide deck covering motivation, methods, results, and discussion.</p>
+        <span class="arrow">&rarr;</span>
+      </a>
+      <a href="graphs.html" class="nav-card">
+        <div class="nav-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><rect x="7" y="11" width="3" height="5"/><rect x="12" y="8" width="3" height="8"/><rect x="17" y="6" width="3" height="10"/></svg></div>
+        <h3>Graphs &amp; Results</h3>
+        <p>Training curves, masking visualizations, and metric comparisons across variants.</p>
+        <span class="arrow">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Masking Strategies Compared</div>
+      <h2>Five Variants, One Variable</h2>
+      <p>Architecture, dataset, and compute are identical. Only the target-position selection policy changes.</p>
+    </div>
+    <div class="model-cards">
+      <article class="model-card">
+        <div class="model-card-header">
+          <span class="model-badge model-color-baseline">Baseline</span>
+          <span class="model-codename">random / model_v0</span>
+        </div>
+        <div class="model-card-body">
+          <p>The original nano4M selects target positions uniformly at random across all modalities.</p>
+          <div class="model-masks">
+            <span class="mask-tag"><span class="dot" style="background:#6b7280"></span>Text: random</span>
+            <span class="mask-tag"><span class="dot" style="background:#6b7280"></span>Image: random</span>
+          </div>
+          <div class="masking-canvas-wrap">
+            <canvas class="masking-canvas" width="220" height="90" data-mask-viz="baseline" data-offset="0" aria-label="Animated random masking visualization"></canvas>
+          </div>
+        </div>
+      </article>
+      <article class="model-card">
+        <div class="model-card-header">
+          <span class="model-badge model-color-v1">V1</span>
+          <span class="model-codename">model_v1 / span</span>
+        </div>
+        <div class="model-card-body">
+          <p>Contiguous span masking on text, with random masking on image modalities.</p>
+          <div class="model-masks">
+            <span class="mask-tag"><span class="dot" style="background:#2563eb"></span>Text: span</span>
+            <span class="mask-tag"><span class="dot" style="background:#2563eb"></span>Image: random</span>
+          </div>
+          <div class="masking-canvas-wrap">
+            <canvas class="masking-canvas" width="220" height="90" data-mask-viz="v1" data-offset="200" aria-label="Animated span and random masking visualization"></canvas>
+          </div>
+        </div>
+      </article>
+      <article class="model-card">
+        <div class="model-card-header">
+          <span class="model-badge model-color-v2">V2</span>
+          <span class="model-codename">model_v2</span>
+        </div>
+        <div class="model-card-body">
+          <p>Random masking on text, with rectangular block masking on image-token grids.</p>
+          <div class="model-masks">
+            <span class="mask-tag"><span class="dot" style="background:#16a34a"></span>Text: random</span>
+            <span class="mask-tag"><span class="dot" style="background:#16a34a"></span>Image: block</span>
+          </div>
+          <div class="masking-canvas-wrap">
+            <canvas class="masking-canvas" width="220" height="90" data-mask-viz="v2" data-offset="400" aria-label="Animated random and block masking visualization"></canvas>
+          </div>
+        </div>
+      </article>
+      <article class="model-card">
+        <div class="model-card-header">
+          <span class="model-badge model-color-v3">V3</span>
+          <span class="model-codename">model_v3 / structured</span>
+        </div>
+        <div class="model-card-body">
+          <p>Fully structured objective: span masking on text and block masking on images.</p>
+          <div class="model-masks">
+            <span class="mask-tag"><span class="dot" style="background:#ea580c"></span>Text: span</span>
+            <span class="mask-tag"><span class="dot" style="background:#ea580c"></span>Image: block</span>
+          </div>
+          <div class="masking-canvas-wrap">
+            <canvas class="masking-canvas" width="220" height="90" data-mask-viz="v3" data-offset="600" aria-label="Animated span and block masking visualization"></canvas>
+          </div>
+        </div>
+      </article>
+      <article class="model-card">
+        <div class="model-card-header">
+          <span class="model-badge model-color-v4">V4</span>
+          <span class="model-codename">model_v4 / mixed</span>
+        </div>
+        <div class="model-card-body">
+          <p>Mixed masking alternates between random and structured choices for each modality.</p>
+          <div class="model-masks">
+            <span class="mask-tag"><span class="dot" style="background:#7c3aed"></span>Text: mixed</span>
+            <span class="mask-tag"><span class="dot" style="background:#7c3aed"></span>Image: mixed</span>
+          </div>
+          <div class="masking-canvas-wrap">
+            <canvas class="masking-canvas" width="220" height="90" data-mask-viz="v4" data-offset="800" aria-label="Animated mixed masking visualization"></canvas>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Final Evaluation Loss</div>
+      <h2>Final Evaluation Loss by Masking Strategy</h2>
+      <p>Lower final evaluation loss indicates better validation performance. These values are final evaluation loss values only, not training loss.</p>
+    </div>
+    <div class="eval-loss-panel">
+      <figure class="eval-loss-figure">
+        <img src="image/final-eval-loss-by-masking-strategy.png" alt="Bar chart showing final eval_loss_avg for Baseline, V1, V2, V3, and V4 masking strategies">
+      </figure>
+      <div class="eval-loss-copy">
+        <p>This bar chart compares the final evaluation loss of the five nano4M masking strategies. Lower values indicate better validation performance. The random masking baseline obtains the lowest final evaluation loss, followed very closely by V1 with span masking. V4 improves over V2 and V3, but it does not outperform the baseline in terms of final evaluation loss. This suggests that, in this experiment, more complex masking strategies do not automatically lead to a lower validation loss.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Evaluation Results</div>
+      <h2>Generation-Based Evaluation</h2>
+      <p>200 validation samples. Bold indicates the best result per column.</p>
+    </div>
+    <div class="results-grid">
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>Image &rarr; Text</h3>
+          <p>BLEU-4, CIDEr, ROUGE-L, Exact Match (0–100 scale)</p>
+        </div>
+        <table class="results-table">
+          <thead><tr><th>Model</th><th>BLEU-4</th><th>CIDEr</th><th>ROUGE-L</th><th>Exact Match</th></tr></thead>
+          <tbody>
+            <tr><td class="model-name model-text-baseline">Baseline</td><td>69.59</td><td>37.07</td><td class="best">84.31</td><td>4.00</td></tr>
+            <tr><td class="model-name model-text-v1">V1</td><td>67.60</td><td>35.38</td><td>83.03</td><td>3.50</td></tr>
+            <tr><td class="model-name model-text-v2">V2</td><td>68.70</td><td>34.40</td><td>83.67</td><td>4.00</td></tr>
+            <tr><td class="model-name model-text-v3">V3</td><td>68.51</td><td>33.58</td><td>83.72</td><td>2.00</td></tr>
+            <tr><td class="model-name model-text-v4">V4</td><td class="best">69.64</td><td class="best">37.55</td><td>84.07</td><td>4.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>Text &rarr; Image</h3>
+          <p>CLEVR fidelity (main), CLIP score, Std (200 samples)</p>
+        </div>
+        <table class="results-table">
+          <thead><tr><th>Model</th><th>CLEVR &uarr;</th><th>CLIP &uarr;</th><th>Std</th></tr></thead>
+          <tbody>
+            <tr><td class="model-name model-text-baseline">Baseline</td><td>0.4226</td><td>0.6287</td><td>0.298</td></tr>
+            <tr><td class="model-name model-text-v1">V1</td><td class="best">0.4735</td><td class="best">0.6301</td><td>0.287</td></tr>
+            <tr><td class="model-name model-text-v2">V2</td><td>0.4440</td><td>0.6275</td><td>0.304</td></tr>
+            <tr><td class="model-name model-text-v3">V3</td><td>0.4340</td><td>0.6271</td><td>0.299</td></tr>
+            <tr><td class="model-name model-text-v4">V4</td><td>0.4266</td><td>0.6260</td><td>0.311</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Conclusions ===== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Key Takeaways</div>
+      <h2>Conclusions</h2>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+
+      <div class="conclusion-row" style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;background:var(--bg);border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='var(--bg)'">
+        <div style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:#ede9fe;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#7c3aed">V4</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Best for image-to-text generation</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.55;">V4 (mixed) is the most robust strategy — highest BLEU-4 (69.64) and CIDEr (37.55) across all variants.</div>
+        </div>
+      </div>
+
+      <div class="conclusion-row" style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;background:var(--bg);border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='var(--bg)'">
+        <div style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:#dbeafe;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+          <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#1d4ed8">V1</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Best for text-to-image generation</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.55;">V1 (text-span / image-random) achieves the best CLEVR fidelity — +0.05 over baseline.</div>
+        </div>
+      </div>
+
+      <div class="conclusion-row" style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;background:var(--bg);border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='var(--bg)'">
+        <div style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">No universal best strategy</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.55;">The optimal masking policy is direction-dependent — not universal across generation tasks.</div>
+        </div>
+      </div>
+
+      <div class="conclusion-row" style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;background:var(--bg);border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='var(--bg)'">
+        <div style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Structure helps when aligned</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.55;">Structured masking improves generation only when the masking primitive matches the target modality direction.</div>
+        </div>
+      </div>
+
+      <div class="conclusion-row" style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;background:var(--bg);transition:background 0.15s;cursor:default;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='var(--bg)'">
+        <div style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:#fff7ed;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Training loss is not enough</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.55;">Loss alone is a poor predictor of generation quality — generation-based evaluation is essential to rank strategies.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+<script>
+(() => {
+  const grey = [226, 232, 240];
+  const red = [239, 68, 68];
+  const cycleMs = 1600;
+  const fadeMs = 200;
+  const logicalWidth = 330;
+  const logicalHeight = 110;
+  const canvases = Array.from(document.querySelectorAll('canvas[data-mask-viz]'));
+
+  function randomSet(count, ratio) {
+    const selected = new Set();
+    const target = Math.round(count * ratio);
+    while (selected.size < target) selected.add(Math.floor(Math.random() * count));
+    return selected;
+  }
+
+  function spanSet(count, minLen, maxLen) {
+    const len = minLen + Math.floor(Math.random() * (maxLen - minLen + 1));
+    const start = Math.floor(Math.random() * (count - len + 1));
+    return new Set(Array.from({ length: len }, (_, i) => start + i));
+  }
+
+  function blockSet(options) {
+    const [w, h] = options[Math.floor(Math.random() * options.length)];
+    const x0 = Math.floor(Math.random() * (4 - w + 1));
+    const y0 = Math.floor(Math.random() * (4 - h + 1));
+    const selected = new Set();
+    for (let y = y0; y < y0 + h; y++)
+      for (let x = x0; x < x0 + w; x++) selected.add(y * 4 + x);
+    return selected;
+  }
+
+  function nextPattern(type) {
+    if (type === 'baseline') return { text: randomSet(12, 0.4), image: randomSet(16, 0.4) };
+    if (type === 'v1') return { text: spanSet(12, 3, 5), image: randomSet(16, 0.3) };
+    if (type === 'v2') return { text: randomSet(12, 0.3), image: blockSet([[2,2],[2,3],[3,2]]) };
+    if (type === 'v3') return { text: spanSet(12, 3, 5), image: blockSet([[2,2],[3,2]]) };
+    return {
+      text: Math.random() < 0.5 ? randomSet(12, 0.3) : spanSet(12, 3, 4),
+      image: Math.random() < 0.5 ? randomSet(16, 0.3) : blockSet([[2,2]])
+    };
+  }
+
+  function colorFor(progress) {
+    const t = Math.max(0, Math.min(1, progress));
+    return `rgb(${Math.round(grey[0]+(red[0]-grey[0])*t)},${Math.round(grey[1]+(red[1]-grey[1])*t)},${Math.round(grey[2]+(red[2]-grey[2])*t)})`;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+
+  function drawCells(ctx, cells, cols, x, y, now) {
+    const size = 14, gap = 3;
+    for (let i = 0; i < cells.length; i++) {
+      const col = i % cols, row = Math.floor(i / cols), cell = cells[i];
+      const fade = cell.target ? Math.min(1, (now - cell.changedAt) / fadeMs) : 0;
+      ctx.fillStyle = cell.target ? colorFor(fade) : '#e2e8f0';
+      roundRect(ctx, x + col*(size+gap), y + row*(size+gap), size, size, 3);
+      ctx.fill();
+    }
+  }
+
+  function createState(canvas) {
+    const type = canvas.dataset.maskViz;
+    const pattern = nextPattern(type);
+    const now = performance.now();
+    return {
+      canvas, ctx: canvas.getContext('2d'), type,
+      offset: Number(canvas.dataset.offset || 0), lastCycle: -1,
+      text: Array.from({length:12}, (_,i) => ({ target: pattern.text.has(i), changedAt: now })),
+      image: Array.from({length:16}, (_,i) => ({ target: pattern.image.has(i), changedAt: now }))
+    };
+  }
+
+  function applyPattern(state, pattern, now) {
+    state.text.forEach((cell, i) => {
+      const target = pattern.text.has(i);
+      if (cell.target !== target) cell.changedAt = now;
+      cell.target = target;
+    });
+    state.image.forEach((cell, i) => {
+      const target = pattern.image.has(i);
+      if (cell.target !== target) cell.changedAt = now;
+      cell.target = target;
+    });
+  }
+
+  const states = canvases.map(createState);
+
+  function frame(now) {
+    states.forEach(state => {
+      const shifted = now + state.offset;
+      const cycle = Math.floor(shifted / cycleMs);
+      if (cycle !== state.lastCycle) {
+        state.lastCycle = cycle;
+        applyPattern(state, nextPattern(state.type), now);
+      }
+      const ctx = state.ctx;
+      ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+      ctx.save();
+      ctx.scale(state.canvas.width / logicalWidth, state.canvas.height / logicalHeight);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+      ctx.font = '10px IBM Plex Mono, monospace'; ctx.fillStyle = '#94a3b8';
+      ctx.fillText('text', 10, 20); ctx.fillText('image', 254, 20);
+      drawCells(ctx, state.text, 12, 10, 34, now);
+      drawCells(ctx, state.image, 4, 254, 34, now);
+      ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  }
+
+  if (states.length) requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(() => {
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#6b7280','#2563eb','#16a34a','#ea580c','#7c3aed'];
+  const particles = [];
+  let width = 0, height = 0, dpr = 1;
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+
+  function resizeHeroCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    width = rect.width; height = rect.height;
+    canvas.width = Math.max(1, Math.floor(width * dpr));
+    canvas.height = Math.max(1, Math.floor(height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function createParticle() {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    return { x: rand(0, width||1), y: rand(0, height||1), size: rand(4,8), vx: rand(-0.3,0.3), vy: rand(-0.3,0.3), opacity: rand(0.08,0.25), color, originalColor: color, maskUntil: 0 };
+  }
+
+  function seedParticles() { particles.length = 0; for (let i=0;i<40;i++) particles.push(createParticle()); }
+
+  function triggerMaskFlash() {
+    const count = Math.floor(rand(3,6));
+    const used = new Set();
+    while (used.size < count && used.size < particles.length) used.add(Math.floor(Math.random()*particles.length));
+    const until = performance.now() + 600;
+    used.forEach(i => { particles[i].maskUntil = until; });
+  }
+
+  function drawParticle(p, now) {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x > width + p.size) p.x = -p.size;
+    if (p.x < -p.size) p.x = width + p.size;
+    if (p.y > height + p.size) p.y = -p.size;
+    if (p.y < -p.size) p.y = height + p.size;
+    ctx.globalAlpha = p.opacity;
+    ctx.fillStyle = now < p.maskUntil ? '#ef4444' : p.originalColor;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+
+  function animateHeroParticles(now) {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach(p => drawParticle(p, now));
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animateHeroParticles);
+  }
+
+  resizeHeroCanvas(); seedParticles();
+  window.addEventListener('resize', resizeHeroCanvas);
+  setInterval(triggerMaskFlash, 3000);
+  requestAnimationFrame(animateHeroParticles);
+})();
+</script>
+</body>
+</html>

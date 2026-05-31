@@ -1,0 +1,95 @@
+﻿{
+  "project": {
+    "title": "Structured Masking Strategies for nano4M on MultiCLEVR",
+    "subtitle": "Comparing random, span, block, and mixed masking for multimodal pretraining",
+    "course": "COM-304 Foundation Models",
+    "institution": "EPFL",
+    "year": "2025"
+  },
+  "team": [
+    { "name": "Ayman Belbachir", "sciper": "356695", "github": "https://github.com/USERNAME" },
+    { "name": "Zyad Tajeddine", "sciper": "362730", "github": "https://github.com/USERNAME" },
+    { "name": "Ali Tahri Hassani", "sciper": "375756", "github": "https://github.com/USERNAME" },
+    { "name": "Nour Alaoui Ismaili", "sciper": "373068", "github": "https://github.com/USERNAME" }
+  ],
+  "models": [
+    {
+      "id": "baseline",
+      "name": "Baseline",
+      "codename": "random / model_v0",
+      "textMask": "random",
+      "imageMask": "random",
+      "description": "The original nano4M: selects target positions uniformly at random across all modalities. Simple and general, but ignores modality structure.",
+      "accent": "#6b7280",
+      "image": "assets/masking_random.png"
+    },
+    {
+      "id": "v1",
+      "name": "V1",
+      "codename": "model_v1 / span",
+      "textMask": "span",
+      "imageMask": "random",
+      "description": "Contiguous span masking on scene_desc text (geometric distribution, p=0.2, mean span ~5 tokens) with sentinel tokens. Random masking on image modalities.",
+      "accent": "#2563eb",
+      "image": "assets/masking_span.png"
+    },
+    {
+      "id": "v2",
+      "name": "V2",
+      "codename": "model_v2",
+      "textMask": "random",
+      "imageMask": "block",
+      "description": "Random masking on text. Rectangular block masking on the 16x16 image-token grid for RGB, depth, and normal modalities.",
+      "accent": "#16a34a",
+      "image": "assets/masking_block.png"
+    },
+    {
+      "id": "v3",
+      "name": "V3",
+      "codename": "model_v3 / structured",
+      "textMask": "span",
+      "imageMask": "block",
+      "description": "Fully structured: span masking on text + block masking on images. The most constrained reconstruction objective.",
+      "accent": "#ea580c",
+      "image": "assets/masking_block.png"
+    },
+    {
+      "id": "v4",
+      "name": "V4",
+      "codename": "model_v4",
+      "textMask": "50% span / 50% random",
+      "imageMask": "50% block / 50% random",
+      "description": "Mixed strategy: each modality independently applies structured or random masking with 50% probability. Balances diversity and structure.",
+      "accent": "#7c3aed",
+      "image": "assets/masking_mixed.png"
+    }
+  ],
+  "imageToText": [
+    { "model": "Baseline", "bleu4": 69.59, "cider": 37.07, "rougeL": 84.31, "exactMatch": 4.00, "bestBleu": false, "bestCider": false, "bestRouge": true, "bestEM": false },
+    { "model": "V1",       "bleu4": 67.60, "cider": 35.38, "rougeL": 83.03, "exactMatch": 3.50, "bestBleu": false, "bestCider": false, "bestRouge": false, "bestEM": false },
+    { "model": "V2",       "bleu4": 68.70, "cider": 34.40, "rougeL": 83.67, "exactMatch": 4.00, "bestBleu": false, "bestCider": false, "bestRouge": false, "bestEM": false },
+    { "model": "V3",       "bleu4": 68.51, "cider": 33.58, "rougeL": 83.72, "exactMatch": 2.00, "bestBleu": false, "bestCider": false, "bestRouge": false, "bestEM": false },
+    { "model": "V4",       "bleu4": 69.64, "cider": 37.55, "rougeL": 84.07, "exactMatch": 4.00, "bestBleu": true,  "bestCider": true,  "bestRouge": false, "bestEM": false }
+  ],
+  "textToImage": [
+    { "model": "Baseline", "clevr": 0.4226, "clip": 0.6287, "stdClevr": 0.298, "best": false },
+    { "model": "V1",       "clevr": 0.4735, "clip": 0.6301, "stdClevr": 0.287, "best": true  },
+    { "model": "V2",       "clevr": 0.4440, "clip": 0.6275, "stdClevr": 0.304, "best": false },
+    { "model": "V3",       "clevr": 0.4340, "clip": 0.6271, "stdClevr": 0.299, "best": false },
+    { "model": "V4",       "clevr": 0.4266, "clip": 0.6260, "stdClevr": 0.311, "best": false }
+  ],
+  "conclusions": [
+    "V4 (mixed) is the most robust strategy for image-to-text generation.",
+    "V1 (text-span / image-random) achieves the best text-to-image fidelity (+0.05 CLEVR over baseline).",
+    "There is no universal best masking strategy - the optimal policy is direction-dependent.",
+    "Structured masking helps only when aligned with the target generation direction.",
+    "Training loss alone is a poor predictor of generation quality."
+  ],
+  "pages": [
+    { "id": "report", "label": "Report", "href": "report.html", "icon": "DOC", "desc": "Full technical report (PDF)" },
+    { "id": "code",   "label": "Code",   "href": "code.html",   "icon": "CODE", "desc": "Implementation & GitHub" },
+    { "id": "slides", "label": "Slides", "href": "slides.html", "icon": "IMG", "desc": "Presentation slides (PDF)" },
+    { "id": "graphs", "label": "Graphs", "href": "graphs.html", "icon": "CHART", "desc": "Training curves & results" }
+  ]
+}
+

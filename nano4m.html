@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About nano4M - Structured Masking</title>
+  <link rel="stylesheet" href="style.css?v=20260531-1">
+  <style>
+    .nano-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .nano-info-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .nano-info-card svg {
+      width: 34px;
+      height: 34px;
+      fill: none;
+      stroke: var(--accent-cyan);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-bottom: 14px;
+    }
+    .nano-info-card h3,
+    .modality-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .nano-info-card p,
+    .modality-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    .nano-visual {
+      margin: 30px 0 6px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,.78);
+      padding: 10px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: nanoVisualIn .7s ease forwards;
+    }
+    .nano-visual img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: calc(var(--radius-lg) - 6px);
+    }
+    .nano-visual.compact {
+      max-width: 940px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .nano-visual-caption {
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    @keyframes nanoVisualIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .pipeline-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .pipeline-box {
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      min-width: 160px;
+      flex: 1;
+      background: var(--bg);
+    }
+    .pipeline-box.dark {
+      background: var(--bg-dark);
+      color: white;
+      border-color: var(--bg-dark);
+    }
+    .pipeline-step {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .pipeline-box.dark .pipeline-step { color: rgba(255,255,255,.55); }
+    .pipeline-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 20px;
+    }
+    .modality-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .modality-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent-cyan);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .modality-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .nano-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+    .nano-stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .nano-stat-card strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .nano-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border-dark);
+      padding: 14px 28px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 15px;
+      transition: background .2s, transform .2s;
+    }
+    .btn-ghost:hover {
+      background: var(--bg);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 760px) {
+      .pipeline-row { flex-direction: column; }
+      .pipeline-arrow { justify-content: center; transform: rotate(90deg); }
+      .modality-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="nano4m.html" class="active">nano4M</a></li>
+      <li><a href="report.html">Report</a></li>
+      <li><a href="code.html">Code</a></li>
+      <li><a href="slides.html">Slides</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">COM-304 &middot; Foundation Models</div>
+    <h1>About nano4M</h1>
+    <p>A minimal implementation of 4M &mdash; massively multimodal masked modeling at nano scale.</p>
+  </div>
+</div>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Overview</div>
+      <h2>What is nano4M?</h2>
+      <p>nano4M is a compact educational implementation of 4M (Massively Multimodal Masked Modeling), inspired by nanoGPT. It is trained on several aligned modalities of the same scene &mdash; RGB images, depth maps, surface normals, and scene descriptions &mdash; and learns to reconstruct hidden target tokens from visible input tokens. Because any modality can be input or target, the model learns many conditional generation directions simultaneously: text from images, images from text, depth from RGB, and so on.</p>
+    </div>
+
+    <div class="nano-card-grid">
+      <article class="nano-info-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M8 10v4M16 10v4"/></svg>
+        <h3>FourM Encoder-Decoder</h3>
+        <p>Width 512, 6 encoder and 6 decoder layers, 64-dim attention heads. Encoder ingests visible tokens; decoder predicts hidden tokens via cross-attention.</p>
+      </article>
+      <article class="nano-info-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+        <h3>4 Aligned Modalities</h3>
+        <p>tok_rgb@256, tok_depth@256, tok_normal@256 (each a 16x16 grid of 256 tokens), and scene_desc (GPT-2 tokenized caption, max 256 tokens).</p>
+      </article>
+      <article class="nano-info-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/><path d="M4 20 20 4"/></svg>
+        <h3>Multimodal Masking</h3>
+        <p>Each sample has input and target tokens drawn from a Dirichlet budget. The model predicts target tokens using a cross-entropy loss averaged per modality.</p>
+      </article>
+    </div>
+
+    <figure class="nano-visual compact">
+      <img src="image/nano4m-overview.jpg" alt="4M overview showing generalist vision and multimodal generative capabilities">
+      <figcaption class="nano-visual-caption">4M learns many input-output directions across aligned modalities.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Architecture</div>
+      <h2>How nano4M Works</h2>
+      <p>The training pipeline follows three steps: (1) for each sample, draw input and target token counts; (2) split the budget across modalities using a symmetric Dirichlet distribution; (3) sample target positions per modality, then sample encoder inputs from the remaining positions. This guarantees encoder and decoder positions are disjoint per modality.</p>
+    </div>
+
+    <figure class="nano-visual">
+      <img src="image/nano4m-pipeline.jpg" alt="Tokenization and 4M multimodal masked pre-training pipeline">
+      <figcaption class="nano-visual-caption">Tokenization turns each modality into discrete tokens before masked encoder-decoder pre-training.</figcaption>
+    </figure>
+
+    <div class="pipeline-row">
+      <div class="pipeline-box dark">
+        <div class="pipeline-step">Step 01</div>
+        <strong>Draw token budget</strong><br>
+        input_tokens_range &amp; target_tokens_range [1, 128]
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-box">
+        <div class="pipeline-step">Step 02</div>
+        <strong>Split across modalities</strong><br>
+        Symmetric Dirichlet alpha=1
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-box">
+        <div class="pipeline-step">Step 03</div>
+        <strong>Sample target positions</strong><br>
+        Per modality masking strategy
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-box">
+        <div class="pipeline-step">Step 04</div>
+        <strong>Encode visible tokens</strong><br>
+        Decoder predicts hidden tokens
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Modalities</div>
+      <h2>The Four Modalities</h2>
+    </div>
+
+    <div class="modality-grid">
+      <article class="modality-card" style="border-left-color:#ef4444">
+        <div class="modality-code">tok_rgb@256</div>
+        <h3>RGB Image</h3>
+        <p>16x16 grid of 256 discrete tokens. Vocabulary size 64,000. Encoded with the Cosmos tokenizer.</p>
+      </article>
+      <article class="modality-card" style="border-left-color:#3b82f6">
+        <div class="modality-code">tok_depth@256</div>
+        <h3>Depth Map</h3>
+        <p>16x16 grid of 256 discrete tokens representing per-pixel depth. Same vocabulary and tokenizer as RGB.</p>
+      </article>
+      <article class="modality-card" style="border-left-color:#8b5cf6">
+        <div class="modality-code">tok_normal@256</div>
+        <h3>Surface Normals</h3>
+        <p>16x16 grid of 256 discrete tokens encoding surface orientation at each pixel.</p>
+      </article>
+      <article class="modality-card" style="border-left-color:#16a34a">
+        <div class="modality-code">scene_desc</div>
+        <h3>Scene Description</h3>
+        <p>GPT-2 tokenized structured caption. Max length 256 tokens. Vocabulary size 50,304.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Training</div>
+      <h2>Training Objective</h2>
+      <p>nano4M is trained with a cross-entropy loss over target tokens. With per_modality_loss_avg enabled, the loss is averaged per modality so that a modality with many target tokens cannot dominate. The model is trained on MultiCLEVR with AdamW (&beta;=(0.9, 0.95), weight decay 0.05, gradient clip 1.0), a cosine schedule with 500M-token warmup, peak learning rate 6x10^-4, and bf16 precision.</p>
+    </div>
+
+    <div class="nano-stat-grid">
+      <div class="nano-stat-card"><strong>5,000M</strong><span>Total training tokens</span></div>
+      <div class="nano-stat-card"><strong>38,147</strong><span>Optimization steps</span></div>
+      <div class="nano-stat-card"><strong>512</strong><span>Model dimension</span></div>
+      <div class="nano-stat-card"><strong>6 / 6</strong><span>Encoder / decoder depth</span></div>
+      <div class="nano-stat-card"><strong>6x10^-4</strong><span>Peak learning rate</span></div>
+      <div class="nano-stat-card"><strong>bf16</strong><span>Precision</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Extension</div>
+      <h2>Our Extension: Structured Masking</h2>
+      <p>In this project, we extend nano4M by replacing the default random masking with structured masking strategies that respect modality structure. We implement span masking for text, block masking for image tokens, and mixed strategies &mdash; keeping the architecture, dataset, and compute budget fixed so that masking is the only independent variable.</p>
+    </div>
+
+    <div class="nano-actions">
+      <a href="index.html" class="btn-ghost">&larr; Back to Home</a>
+      <a href="graphs.html" class="btn-download">View Results &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code — nano4M Structured Masking</title>
+  <link rel="stylesheet" href="style.css?v=20260531-1">
+  <style>
+    .impl-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 640px) { .impl-grid { grid-template-columns: 1fr; } }
+    .impl-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .impl-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-dark); }
+    .impl-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .impl-icon svg { width: 16px; height: 16px; }
+    .impl-cat { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .impl-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+    .impl-desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+    /* Accordion */
+    .file-accordion { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .file-item { border-bottom: 1px solid var(--border); }
+    .file-item:last-child { border-bottom: none; }
+    .file-trigger {
+      width: 100%; background: var(--bg); border: none; cursor: pointer;
+      padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+      text-align: left; transition: background 0.15s;
+    }
+    .file-trigger:hover { background: var(--bg-alt); }
+    .file-trigger.open { background: var(--bg-alt); }
+    .file-icon-wrap {
+      width: 30px; height: 30px; border-radius: 6px; background: #1e293b;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .file-icon-wrap svg { width: 14px; height: 14px; }
+    .file-name-wrap { flex: 1; min-width: 0; }
+    .file-name {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .file-name .dim { color: var(--text-muted); font-weight: 400; }
+    .file-short { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .file-chevron {
+      flex-shrink: 0; width: 16px; height: 16px; color: var(--text-muted);
+      transition: transform 0.25s; display: flex; align-items: center; justify-content: center;
+    }
+    .file-trigger.open .file-chevron { transform: rotate(180deg); }
+    .file-body {
+      overflow: hidden; max-height: 0; transition: max-height 0.3s ease;
+      background: var(--bg-dark);
+    }
+    .file-body.open { max-height: 200px; }
+    .file-body-inner { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+    .file-path-row { display: flex; align-items: center; gap: 10px; }
+    .path-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+    .path-value {
+      font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 4px;
+      flex: 1; word-break: break-all;
+    }
+    .file-desc-row { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.55; }
+    .copy-btn {
+      background: rgba(255,255,255,0.08); border: none; border-radius: 4px;
+      color: rgba(255,255,255,0.5); font-family: var(--font-mono); font-size: 11px;
+      padding: 4px 10px; cursor: pointer; flex-shrink: 0; transition: background 0.15s, color 0.15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    .copy-btn.copied { color: #4ade80; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="nano4m.html">nano4M</a></li>
+      <li><a href="report.html">Report</a></li>
+      <li><a href="code.html" class="active">Code</a></li>
+      <li><a href="slides.html">Slides</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">Implementation</div>
+    <h1>Code &amp; Implementation</h1>
+    <p>This project extends nano4M by implementing alternative masking strategies and custom generation-based evaluation pipelines, trained and tested on the EPFL SCITAS cluster.</p>
+  </div>
+</div>
+
+<!-- GitHub Profiles -->
+<section class="github-section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Team GitHub profiles</div>
+      <h2>Contributors</h2>
+    </div>
+    <div class="github-grid">
+      <div class="github-card">
+        <div class="github-avatar">AB</div>
+        <h3>Ayman Belbachir</h3>
+        <span class="text-mono text-muted">SCIPER: 356695</span>
+        <a href="https://github.com/aymanbelbachir" target="_blank" rel="noopener noreferrer" class="btn-github">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Open GitHub profile
+        </a>
+      </div>
+      <div class="github-card">
+        <div class="github-avatar">ZT</div>
+        <h3>Zyad Tajeddine</h3>
+        <span class="text-mono text-muted">SCIPER: 362730</span>
+        <a href="https://github.com/zyad77" target="_blank" rel="noopener noreferrer" class="btn-github">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Open GitHub profile
+        </a>
+      </div>
+      <div class="github-card">
+        <div class="github-avatar">AT</div>
+        <h3>Ali Tahri Hassani</h3>
+        <span class="text-mono text-muted">SCIPER: 375756</span>
+        <a href="https://github.com/idk558" target="_blank" rel="noopener noreferrer" class="btn-github">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Open GitHub profile
+        </a>
+      </div>
+      <div class="github-card">
+        <div class="github-avatar">NA</div>
+        <h3>Nour Alaoui Ismaili</h3>
+        <span class="text-mono text-muted">SCIPER: 373068</span>
+        <a href="https://github.com/nouralaoui" target="_blank" rel="noopener noreferrer" class="btn-github">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Open GitHub profile
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What We Implemented -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">What we built</div>
+      <h2>What We Implemented</h2>
+    </div>
+    <div class="impl-grid">
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#dbeafe;"><svg viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><path d="M4 5h16M4 12h10M4 19h7"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#1d4ed8;">Masking</div>
+          <div class="impl-title">Span masking for text</div>
+          <div class="impl-desc">Contiguous segments on <code class="text-mono" style="font-size:11px">scene_desc</code> with geometric distribution (p=0.2) and sentinel tokens.</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#dcfce7;"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#15803d;">Masking</div>
+          <div class="impl-title">Block masking for images</div>
+          <div class="impl-desc">Rectangular blocks on <code class="text-mono" style="font-size:11px">tok_rgb@256</code>, <code class="text-mono" style="font-size:11px">tok_depth@256</code>, <code class="text-mono" style="font-size:11px">tok_normal@256</code>.</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#ede9fe;"><svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#7c3aed;">Masking</div>
+          <div class="impl-title">Mixed masking strategy</div>
+          <div class="impl-desc">Combines random and structured masking with configurable probability (50/50 in V4).</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#ffedd5;"><svg viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><path d="M5 3h14M5 3a2 2 0 0 0-2 2v1M19 3a2 2 0 0 1 2 2v1M3 6h18M3 6v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6"/><path d="M10 11l2 2 4-4"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#c2410c;">Training</div>
+          <div class="impl-title">5 controlled experiments</div>
+          <div class="impl-desc">Baseline, V1, V2, V3, V4 trained under identical setup on EPFL SCITAS (2×L40, 5,000M tokens).</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#f0fdf4;"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/><path d="M15 15l2 2 4-4"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#16a34a;">Evaluation</div>
+          <div class="impl-title">Image-to-text pipeline</div>
+          <div class="impl-desc">BLEU-4, CIDEr, ROUGE-L, Exact Match scored over 200 validation samples.</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#f0fdf4;"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m7 15 3-3 3 3 2-2 3 3"/><circle cx="8" cy="9" r="1"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#16a34a;">Evaluation</div>
+          <div class="impl-title">Text-to-image pipeline</div>
+          <div class="impl-desc">Custom CLEVR fidelity verifier (Grounding DINO) + CLIP alignment score.</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#fef9c3;"><svg viewBox="0 0 24 24" fill="none" stroke="#a16207" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#a16207;">Scripts</div>
+          <div class="impl-title">Generation &amp; scoring scripts</div>
+          <div class="impl-desc">Prediction generation, metric scoring, sample comparison, and visual HTML reports.</div>
+        </div>
+      </div>
+      <div class="impl-card">
+        <div class="impl-icon" style="background:#fce7f3;"><svg viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>
+        <div>
+          <div class="impl-cat" style="color:#be185d;">Testing</div>
+          <div class="impl-title">Unit tests</div>
+          <div class="impl-desc"><code class="text-mono" style="font-size:11px">tests/test_structured_masking.py</code> — verifies encoder/decoder disjointness for all strategies.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Task Distribution -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Team organization</div>
+      <h2>Task Distribution</h2>
+    </div>
+    <div class="task-cards">
+      <div class="task-card" style="border-left:3px solid var(--v3);">
+        <h3>Ali Tahri Hassani &amp; Zyad Tajeddine</h3>
+        <p>Implementation of masking strategies (<code class="text-mono">SimpleMultimodalMasking</code>: span, block, structured, and mixed primitives). Controlled training experiments, configuration, distributed training on SCITAS, logging, and checkpointing via WandB.</p>
+      </div>
+      <div class="task-card" style="border-left:3px solid var(--v1);">
+        <h3>Nour Alaoui Ismaili &amp; Ayman Belbachir</h3>
+        <p>Evaluation methods: image-to-text and text-to-image generation pipelines, metric scorers, CLEVR fidelity verifier with Grounding DINO and CLIP, and unit tests that validate the masking strategies.</p>
+      </div>
+      <div class="task-card" style="grid-column:1/-1;border-left:3px solid var(--text);">
+        <h3>All Members</h3>
+        <p>End-to-end pipeline design and integration, experimental analysis, slides, and final report writing. The checkpoint logistics challenge (multi-GB .pth files across the cluster) was handled jointly.</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-header">
+      <div class="section-tag">Key files</div>
+      <h2>Codebase Structure</h2>
+      <p style="font-size:13px;color:var(--text-muted);">Click any file to reveal its full path.</p>
+    </div>
+
+    <div class="file-accordion">
+
+      <div class="file-item">
+        <button class="file-trigger" onclick="toggleFile(this)">
+          <div class="file-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="file-name-wrap">
+            <div class="file-name"><span class="dim">nanofm/data/multimodal/</span>masking.py</div>
+            <div class="file-short">Masking strategies — SimpleMultimodalMasking + StructuredMultimodalMasking</div>
+          </div>
+          <div class="file-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="file-body">
+          <div class="file-body-inner">
+            <div class="file-path-row">
+              <span class="path-label">path</span>
+              <span class="path-value">com-304-FM-project-2026-main/nano4M/nanofm/data/multimodal/masking.py</span>
+              <button class="copy-btn" onclick="copyPath(this, 'com-304-FM-project-2026-main/nano4M/nanofm/data/multimodal/masking.py')">copy</button>
+            </div>
+            <div class="file-desc-row">Core masking logic. Contains <code style="font-family:monospace;font-size:11px;color:#a5f3fc">SimpleMultimodalMasking</code> (baseline) and <code style="font-family:monospace;font-size:11px;color:#a5f3fc">StructuredMultimodalMasking</code> subclass with span, block, and mixed primitives.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-item">
+        <button class="file-trigger" onclick="toggleFile(this)">
+          <div class="file-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          </div>
+          <div class="file-name-wrap">
+            <div class="file-name"><span class="dim">tests/</span>test_structured_masking.py</div>
+            <div class="file-short">Unit tests — encoder/decoder disjointness for all strategies</div>
+          </div>
+          <div class="file-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="file-body">
+          <div class="file-body-inner">
+            <div class="file-path-row">
+              <span class="path-label">path</span>
+              <span class="path-value">com-304-FM-project-2026-main/nano4M/tests/test_structured_masking.py</span>
+              <button class="copy-btn" onclick="copyPath(this, 'com-304-FM-project-2026-main/nano4M/tests/test_structured_masking.py')">copy</button>
+            </div>
+            <div class="file-desc-row">Run with <code style="font-family:monospace;font-size:11px;color:#a5f3fc">python -m unittest discover -s tests</code>. Asserts encoder/decoder position disjointness across all 5 masking variants.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-item">
+        <button class="file-trigger" onclick="toggleFile(this)">
+          <div class="file-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          </div>
+          <div class="file-name-wrap">
+            <div class="file-name">generate_scene_desc_predictions.py</div>
+            <div class="file-short">Image-to-text prediction generation from checkpoint</div>
+          </div>
+          <div class="file-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="file-body">
+          <div class="file-body-inner">
+            <div class="file-path-row">
+              <span class="path-label">path</span>
+              <span class="path-value">com-304-FM-project-2026-main/nano4M/generate_scene_desc_predictions.py</span>
+              <button class="copy-btn" onclick="copyPath(this, 'com-304-FM-project-2026-main/nano4M/generate_scene_desc_predictions.py')">copy</button>
+            </div>
+            <div class="file-desc-row">Loads a trained <code style="font-family:monospace;font-size:11px;color:#a5f3fc">.pth</code> checkpoint, runs greedy ROAR decoding on 200 validation samples, and saves reference/prediction pairs as JSON.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-item">
+        <button class="file-trigger" onclick="toggleFile(this)">
+          <div class="file-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M4 19V5M4 19h17"/><rect x="7" y="11" width="3" height="5"/><rect x="12" y="8" width="3" height="8"/><rect x="17" y="6" width="3" height="10"/></svg>
+          </div>
+          <div class="file-name-wrap">
+            <div class="file-name">score_scene_desc_predictions.py</div>
+            <div class="file-short">BLEU-4, CIDEr, ROUGE-L, Exact Match scorer</div>
+          </div>
+          <div class="file-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="file-body">
+          <div class="file-body-inner">
+            <div class="file-path-row">
+              <span class="path-label">path</span>
+              <span class="path-value">com-304-FM-project-2026-main/nano4M/score_scene_desc_predictions.py</span>
+              <button class="copy-btn" onclick="copyPath(this, 'com-304-FM-project-2026-main/nano4M/score_scene_desc_predictions.py')">copy</button>
+            </div>
+            <div class="file-desc-row">Reads the JSON pairs from the generator script and computes BLEU-4, lightweight TF-IDF CIDEr, ROUGE-L, and Exact Match on 0–100 scale.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-item">
+        <button class="file-trigger" onclick="toggleFile(this)">
+          <div class="file-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+          </div>
+          <div class="file-name-wrap">
+            <div class="file-name">compare_one_sample_all_models.py</div>
+            <div class="file-short">Side-by-side comparison of all 5 variants on the same sample</div>
+          </div>
+          <div class="file-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="file-body">
+          <div class="file-body-inner">
+            <div class="file-path-row">
+              <span class="path-label">path</span>
+              <span class="path-value">com-304-FM-project-2026-main/nano4M/compare_one_sample_all_models.py</span>
+              <button class="copy-btn" onclick="copyPath(this, 'com-304-FM-project-2026-main/nano4M/compare_one_sample_all_models.py')">copy</button>
+            </div>
+            <div class="file-desc-row">Runs Baseline, V1, V2, V3, V4 on the same validation sample and exports a side-by-side comparison report for qualitative analysis.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+<script>
+function toggleFile(trigger) {
+  const item = trigger.closest('.file-item');
+  const body = item.querySelector('.file-body');
+  const isOpen = trigger.classList.contains('open');
+
+  document.querySelectorAll('.file-trigger.open').forEach(t => {
+    t.classList.remove('open');
+    t.closest('.file-item').querySelector('.file-body').classList.remove('open');
+  });
+
+  if (!isOpen) {
+    trigger.classList.add('open');
+    body.classList.add('open');
+  }
+}
+
+function copyPath(btn, path) {
+  navigator.clipboard.writeText(path).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report — nano4M Structured Masking</title>
+  <link rel="stylesheet" href="style.css?v=20260531-1">
+  <style>
+    .dark-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px;
+      background: var(--bg-dark);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .dark-card {
+      background: #111827;
+      padding: 28px 24px;
+      position: relative;
+      transition: background 0.2s;
+      cursor: default;
+    }
+    .dark-card:hover { background: #1a2535; }
+    .dark-card-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dark-card-num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .dark-card-section {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+    }
+    .dark-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .dark-card-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.6;
+    }
+    .dark-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .dark-card:hover::after { opacity: 1; }
+    .dc-blue .dark-card-num-badge  { background: #1d4ed820; color: #60a5fa; }
+    .dc-teal .dark-card-num-badge  { background: #0d948820; color: #2dd4bf; }
+    .dc-orange .dark-card-num-badge { background: #ea580c20; color: #fb923c; }
+    .dc-purple .dark-card-num-badge { background: #7c3aed20; color: #a78bfa; }
+    .dc-red .dark-card-num-badge   { background: #dc262620; color: #f87171; }
+    .dc-gray .dark-card-num-badge  { background: #6b728020; color: #9ca3af; }
+    .dc-blue::after  { background: #2563eb; }
+    .dc-teal::after  { background: #0d9488; }
+    .dc-orange::after { background: #ea580c; }
+    .dc-purple::after { background: #7c3aed; }
+    .dc-red::after   { background: #dc2626; }
+    .dc-gray::after  { background: #6b7280; }
+    .dc-blue:hover .dark-card-title  { color: #93c5fd; }
+    .dc-teal:hover .dark-card-title  { color: #5eead4; }
+    .dc-orange:hover .dark-card-title { color: #fdba74; }
+    .dc-purple:hover .dark-card-title { color: #c4b5fd; }
+    .dc-red:hover .dark-card-title   { color: #fca5a5; }
+    .dc-gray:hover .dark-card-title  { color: #d1d5db; }
+    .dc-blue:hover .dark-card-desc   { color: rgba(147,197,253,0.6); }
+    .dc-teal:hover .dark-card-desc   { color: rgba(94,234,212,0.6); }
+    .dc-orange:hover .dark-card-desc  { color: rgba(253,186,116,0.6); }
+    .dc-purple:hover .dark-card-desc  { color: rgba(196,181,253,0.6); }
+    .dc-red:hover .dark-card-desc    { color: rgba(252,165,165,0.6); }
+    .dc-gray:hover .dark-card-desc   { color: rgba(209,213,219,0.6); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span>nano4M</span> Structured Masking</a>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="nano4m.html">nano4M</a></li>
+      <li><a href="report.html" class="active">Report</a></li>
+      <li><a href="code.html">Code</a></li>
+      <li><a href="slides.html">Slides</a></li>
+      <li><a href="graphs.html">Graphs</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="section-tag">COM-304 &middot; Final Project Report</div>
+    <h1>Final Report</h1>
+    <p>The full technical report describes the motivation, method, experiments, evaluation pipelines, results, limitations, and individual contributions.</p>
+  </div>
+</div>
+
+<!-- Download -->
+<section class="alt">
+  <div class="container">
+    <div class="download-card">
+      <div class="download-icon image-logo">
+        <img src="image/logo-rapport.png" alt="Report logo">
+      </div>
+      <h2>Structured Masking Strategies for nano4M on MultiCLEVR</h2>
+      <p>IEEE-format technical report covering the complete experimental analysis: five masking variants, two custom evaluation pipelines (image-to-text and text-to-image), and a rigorous comparison on MultiCLEVR.</p>
+      <a href="final_report_IA.pdf" download class="btn-download">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Final Report
+      </a>
+      <span class="download-note">PDF file &mdash; COM-304 Final Project Report</span>
+    </div>
+  </div>
+</section>
+
+<!-- Dark grid sections -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag">Report overview</div>
+      <h2>What the Report Covers</h2>
+      <p>Six sections covering the full research pipeline from motivation to individual contributions.</p>
+    </div>
+
+    <div class="dark-grid">
+
+      <div class="dark-card dc-blue">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">I</span>
+          <span class="dark-card-section">Introduction</span>
+        </div>
+        <div class="dark-card-title">Motivation</div>
+        <div class="dark-card-desc">Why random masking is suboptimal; how structure in text and image modalities motivates alternative masking policies.</div>
+      </div>
+
+      <div class="dark-card dc-teal">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">II</span>
+          <span class="dark-card-section">Related Work</span>
+        </div>
+        <div class="dark-card-title">Literature Context</div>
+        <div class="dark-card-desc">BERT, SpanBERT, T5, MAE, BEiT, MultiMAE — positioning our work in the masked modeling landscape.</div>
+      </div>
+
+      <div class="dark-card dc-orange">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">III</span>
+          <span class="dark-card-section">Method</span>
+        </div>
+        <div class="dark-card-title">Masking Primitives</div>
+        <div class="dark-card-desc">Span, block, and mixed masking implementations with Dirichlet budget allocation and sentinel tokens.</div>
+      </div>
+
+      <div class="dark-card dc-purple">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">IV</span>
+          <span class="dark-card-section">Experiments</span>
+        </div>
+        <div class="dark-card-title">Results &amp; Analysis</div>
+        <div class="dark-card-desc">Training loss, image-to-text (BLEU/CIDEr/ROUGE), text-to-image (CLEVR fidelity + CLIP) across 5 variants.</div>
+      </div>
+
+      <div class="dark-card dc-red">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">V</span>
+          <span class="dark-card-section">Conclusion</span>
+        </div>
+        <div class="dark-card-title">Takeaways &amp; Limitations</div>
+        <div class="dark-card-desc">Direction-dependent optimality, single-dataset limitations, small-scale caveats, and future directions.</div>
+      </div>
+
+      <div class="dark-card dc-gray">
+        <div class="dark-card-num">
+          <span class="dark-card-num-badge">VI</span>
+          <span class="dark-card-section">Contributions</span>
+        </div>
+        <div class="dark-card-title">Individual Contributions</div>
+        <div class="dark-card-desc">Detailed breakdown of what each team member implemented, tested, and wrote.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>COM-304 Foundation Models</strong> &middot; EPFL &middot; Structured Masking Strategies for nano4M
+</footer>
+
+<script src="script.js?v=20260531-1"></script>
+</body>
+</html>
